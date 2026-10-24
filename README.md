@@ -2,7 +2,9 @@
 
 Sitio de [Rancho Varadero](https://wa.me/50376956521), un rancho de playa en primera fila frente al mar en Playa El Amatal, La Libertad, El Salvador, administrado por Alquileres MM.
 
-Es la demo de la charla **«Dynamic Scroll Website Generation»** en DevDay Exchange San Salvador (24 de octubre de 2026): el mismo sitio en dos versiones.
+Es la demo de la charla **«Generación de sitios web dinámicos con Codex y Higgsfield»** en DevDay Exchange San Salvador (24 de octubre de 2026): el mismo sitio en dos versiones.
+
+Guía paso a paso: [GUIA.md](GUIA.md), cómo construir un sitio así con Codex y Higgsfield.
 
 | Ruta | Qué es |
 | --- | --- |
@@ -18,7 +20,7 @@ El scroll no reproduce un video: mueve su `currentTime`. Siete fotos del rancho 
 3. **Clips:** MiniMax H3 en 2K, 8 s, con primer y último fotograma fijos y sin audio. Prompts y script en `media/clips/h3/`.
 4. **Web:** ffmpeg (GOP 6, CRF 30, BT.709, faststart) a `public/video/`, y el motor de scroll en `src/scripts/scroll-world.js`.
 
-Los videos y las imágenes se generaron con [Higgsfield](https://higgsfield.ai). El código lo escribió un agente (Claude Code) con dos skills incluidas en `.claude/skills/`:
+Los videos y las imágenes se generaron con [Higgsfield](https://higgsfield.ai). El código lo escribió un agente (Codex) con dos skills incluidas en `.claude/skills/`:
 
 - [`landing-page-design`](https://github.com/elayadesign/ai-design-skills) de Elaya (MIT)
 - [`scroll-world`](https://github.com/oso95/scroll-world) de cyw (MIT)
