@@ -3,6 +3,8 @@ import { Font, getImage } from 'astro:assets';
 import '../styles/global.css';
 import poster from '../assets/paseo/paseo-1.webp';
 import { rutas, sitio, type Lang } from '../data/sitio';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
   lang: Lang;
@@ -97,5 +99,8 @@ const robots = noindex ? 'noindex, follow' : 'index, follow, max-image-preview:l
   </head>
   <body class="min-h-svh">
     <slot />
+    <!-- Vercel Web Analytics y Speed Insights (se activan en el panel del proyecto en Vercel). -->
+    <Analytics />
+    <SpeedInsights />
   </body>
 </html>

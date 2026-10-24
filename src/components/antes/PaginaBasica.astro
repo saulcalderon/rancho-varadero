@@ -2,6 +2,8 @@
 // Versión "antes": una landing genérica de plantilla, sin skills de diseño ni video.
 // Es el punto de partida de la charla; no la mejores.
 import { contacto, fotos, textos, type Lang } from '../../data/rancho';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
   lang: Lang;
@@ -89,6 +91,8 @@ const [portada, ...galeria] = fotos;
     <footer class="footer">
       <p>© 2026 Rancho Varadero · Alquileres MM. {t.derechos}</p>
     </footer>
+    <Analytics />
+    <SpeedInsights />
   </body>
 </html>
 
