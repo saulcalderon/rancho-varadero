@@ -515,8 +515,9 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
 
   /*
    * Modos de scroll en escritorio (data-paso en <html>; en pantallas táctiles siempre es el scroll nativo):
-   * - "paradas": scroll libre y suavizado, pero un mismo gesto nunca pasa de la siguiente toma estática.
-   *   Un scroll corto avanza parte del tramo; uno largo (o con inercia) se detiene justo en la toma estática.
+   * - "paradas": scroll libre y suavizado que se detiene en cada toma estática. Un scroll corto avanza parte del
+   *   tramo; uno largo (o con inercia) se detiene justo en la toma estática, y si sigues empujando continúa. Dentro
+   *   de una toma estática el scroll rinde 3× para que la cámara no parezca bloqueada.
    * - "guiado": cada gesto lleva la cámara a la toma estática siguiente a ritmo constante (6 s por tramo).
    * - sin atributo (predeterminado): scroll libre del navegador.
    * En ambos modos, flechas, espacio y un clic en el riel viajan a la toma estática a ritmo de vídeo. Fuera del paseo, y al
@@ -529,7 +530,12 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     // sus 8 s reales). Saltar varias tomas estáticas desde el riel suma un poco por toma estática extra.
     const MS_TRAMO = 6000;
     const MS_TRAMO_EXTRA = 2500;
-    const SUAVIZADO = 0.14; // fracción de la distancia que recorre el scroll suavizado en cada cuadro
+    // "paradas": fracción de la distancia que recorre el scroll suavizado en cada cuadro. El trackpad ya manda
+    // movimiento fino, así que se sigue casi directo; la rueda del mouse (saltos grandes) se suaviza más.
+    const SUAVIZADO_TRACKPAD = 0.45;
+    const SUAVIZADO_RUEDA = 0.18;
+    const FACTOR_QUIETO = 3; // dentro de una toma estática (cámara quieta) el scroll rinde 3×: sin zona muerta
+    const EMPUJE_SALIDA = 0.3; // seguir empujando en la toma estática esta fracción de pantalla la deja atrás
     let animando = false;
     let ultimaRueda = 0;
 
@@ -575,6 +581,16 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     let dirGesto = 0;
     let deslizando = false;
     let puesto = 0; // última posición que fijó el deslizamiento (para notar si algo más movió la página)
+    let suavizado = SUAVIZADO_TRACKPAD;
+    let empuje = 0; // cuánto se ha seguido empujando contra el tope del gesto
+    type Tramo = { kind: string; start: number; end: number };
+    // ¿La posición y cae en una toma estática (segmento sin clip, cámara quieta)?
+    const enQuieto = (y: number) => {
+      const s = sw() as (ReturnType<typeof sw> & { segments?: Tramo[] }) | undefined;
+      if (!s?.segments) return false;
+      const r = y - s.top0;
+      return s.segments.find((g) => r >= g.start && r < g.end)?.kind === 'dive';
+    };
     const fijar = (y: number) => {
       window.scrollTo({ top: y, behavior: 'instant' });
       puesto = window.scrollY;
@@ -598,24 +614,36 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
         return;
       }
       // Al menos 1 px por cuadro: el navegador redondea el scroll y un paso menor dejaría el final a medias.
-      fijar(window.scrollY + Math.sign(d) * Math.max(1, Math.abs(d) * SUAVIZADO));
+      fijar(window.scrollY + Math.sign(d) * Math.max(1, Math.abs(d) * suavizado));
       requestAnimationFrame(deslizar);
     }
     function ruedaConParadas(e: WheelEvent, nuevo: boolean) {
       const dir = Math.sign(e.deltaY);
       if (objetivo != null && Math.abs(window.scrollY - puesto) > 2) objetivo = null; // la página se movió por otra vía
       const desde = objetivo ?? window.scrollY;
+      const vh = sw()?.vh || window.innerHeight;
+      let px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * vh : e.deltaY;
+      // Trackpad: deltas en píxeles y finos. Rueda del mouse: saltos de línea o de 50 px o más.
+      suavizado = e.deltaMode === 0 && Math.abs(e.deltaY) < 50 ? SUAVIZADO_TRACKPAD : SUAVIZADO_RUEDA;
       // Un gesto nuevo (o un cambio de dirección) fija su tope: la siguiente toma estática desde donde está la cámara.
       if (nuevo || dir !== dirGesto) {
         dirGesto = dir;
         limite = siguiente(dir, desde);
+        empuje = 0;
+      } else if (limite != null && Math.abs(desde - limite) < 1) {
+        // Ya está en el tope y sigue empujando: tope suave, después de un empujón sigue al tramo siguiente.
+        empuje += Math.abs(px);
+        if (empuje > vh * EMPUJE_SALIDA) {
+          limite = siguiente(dir, limite);
+          empuje = 0;
+        }
       }
       if (limite == null) {
         objetivo = null;
         return; // antes de la primera o después de la última toma estática: scroll normal
       }
       e.preventDefault();
-      const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+      if (enQuieto(desde)) px *= FACTOR_QUIETO;
       objetivo = dir > 0 ? Math.min(desde + px, limite) : Math.max(desde + px, limite);
       if (!deslizando) {
         deslizando = true;
