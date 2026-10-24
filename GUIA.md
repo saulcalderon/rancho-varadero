@@ -237,11 +237,20 @@ Para comprobar las costuras, compara el último fotograma del clip k con el prim
 
 Un clip recién generado no sirve para hacer scrub (moverlo con el scroll). Hay que recodificarlo:
 
+Se hacen dos versiones de cada clip: una en 2K para escritorio y una ligera para teléfonos.
+
 ```sh
-ffmpeg -i master/clip-1.mp4 -an -vf "scale=1920:-2" -c:v libx264 -preset slow -crf 30 \
+# Escritorio: la resolución completa del master (2560×1440), sin reescalar
+ffmpeg -i master/clip-1.mp4 -an -c:v libx264 -preset slow -crf 30 \
   -g 6 -keyint_min 6 -sc_threshold 0 -pix_fmt yuv420p \
   -color_primaries bt709 -color_trc iec61966-2-1 -colorspace bt709 -color_range tv \
   -movflags +faststart+write_colr public/video/paseo-1.mp4
+
+# Teléfonos: 1280×720 (en vertical solo se ve una franja del 16:9; la mitad de peso para datos móviles)
+ffmpeg -i public/video/paseo-1.mp4 -an -vf "scale=1280:-2:flags=lanczos" -c:v libx264 -preset slow -crf 30 \
+  -g 6 -keyint_min 6 -sc_threshold 0 -pix_fmt yuv420p \
+  -color_primaries bt709 -color_trc iec61966-2-1 -colorspace bt709 \
+  -movflags +faststart+write_colr public/video/paseo-1-m.mp4
 ```
 
 Qué hace cada parte y por qué importa:
@@ -250,9 +259,10 @@ Qué hace cada parte y por qué importa:
 - **Etiquetas BT.709 (`-color_*`, `write_colr`)**: sin ellas, el navegador pinta el video más claro que su póster y el cambio de imagen a video se nota.
 - **`+faststart`**: pone los metadatos al inicio del archivo para que empiece a cargar rápido.
 - **`-an`**: sin audio, otra vez, por si acaso.
-- **1920 de ancho, CRF 30**: los 6 clips pesan 45 MB (de 6 a 9 MB cada uno). Con CRF 26 eran 72 MB. En el clip 6, la similitud (SSIM) fue 0,94 / 0,93 / 0,91 con CRF 28 / 30 / 32.
+- **Tamaños y calidad:** en escritorio, los 6 clips en 2K pesan 70 MB; en teléfono, 23 MB. La primera versión del sitio usaba 1920 de ancho (45 MB) y se veía blanda en pantallas Retina: comparada con el master, la similitud (SSIM) del clip 3 sube de 0,944 (1920, CRF 30) a 0,959 (2560, CRF 30). Ojo: el master de MiniMax ya es algo suave en pleno movimiento; ningún encode le agrega detalle.
+- **Las dos versiones en el motor:** `connectors` lleva los clips 2K y `connectorsMobile` los `-m.mp4`; el motor usa los ligeros en pantallas táctiles o angostas.
 
-**Los pósters.** Cada toma estática muestra una imagen fija debajo del video. Esa imagen tiene que ser un fotograma real del video, no la foto original, para que coincida píxel a píxel:
+**Los pósters.** Cada toma estática muestra una imagen fija debajo del video. Esa imagen tiene que ser un fotograma real del video (de la versión 2K), no la foto original, para que coincida píxel a píxel:
 
 - `paseo-k` = primer fotograma del clip k (tomas estáticas 1 a 6).
 - `paseo-7` = último fotograma del clip 6 (la última toma estática).
@@ -267,7 +277,7 @@ ffmpeg -sseof -1 -i public/video/paseo-6.mp4 -update 1 \
   -vf "scale=in_color_matrix=bt709:in_range=tv:out_range=pc,format=rgb24" paseo-7.png
 ```
 
-Luego pide a Codex que los pase a WebP y los guarde en `src/assets/paseo/`.
+Luego pide a Codex que los pase a WebP (2560 de ancho, calidad 78) y los guarde en `src/assets/paseo/`.
 
 ---
 
@@ -305,7 +315,7 @@ Aprobado. Construye el sitio sección por sección en Astro + Tailwind, en espa�
 ```text
 Usa $scroll-world en este proyecto Astro, PERO los videos ya están generados. No generes nada ni gastes créditos: ni stills, ni clips, ni cadena 9:16. No llames a Higgsfield ni a ningún modelo de imagen o video. Del Step 0 solo comprueba ffmpeg/ffprobe. Sáltate los Steps 2 a 5; del Step 6 solo usa ffmpeg; haz completos los Steps 7 y 8.
 
-Videos: public/video/paseo-1.mp4 … paseo-6.mp4 (1920×1080, GOP 6, sin audio, ya codificados: no los recodifiques). Pósters: src/assets/paseo/paseo-1…7.webp (fotogramas reales del video).
+Videos: public/video/paseo-1.mp4 … paseo-6.mp4 (2560×1440) y paseo-1-m.mp4 … paseo-6-m.mp4 (1280×720, para teléfonos: connectorsMobile). GOP 6, sin audio, ya codificados: no los recodifiques. Pósters: src/assets/paseo/paseo-1…7.webp (fotogramas reales del video).
 
 Cableado:
 - sections: las 7 tomas estáticas, SIN clip. Su still es el póster de esa toma estática.
@@ -314,7 +324,9 @@ Cableado:
 - El texto de cada toma estática se ve con la cámara quieta en esa toma estática, no a mitad del tramo.
 - Móvil: el 16:9 se recorta. Mira cada fotograma y define un `focus` horizontal (0–100) por toma estática para que el sujeto quede a la vista.
 - prefers-reduced-motion y save-data: solo pósters, sin video.
-- Opción de scroll guiado: un gesto, una flecha o un clic en el riel de tomas estáticas reproduce el clip hasta la siguiente toma estática; después de la última toma estática, el scroll vuelve a ser normal.
+- Precarga todos los clips desde el inicio (el más cercano primero) y muestra el progreso: «Cargando el recorrido · n/6». Si alguien llega a un tramo cuyo clip aún no está, muestra la foto con «Cargando video…» (sin zoom falso).
+- iOS: ceba cada clip (play → pause, en silencio) en cuanto se crea y otra vez con cada toque mientras no lo esté. Safari no carga los datos de un video en pausa que nunca se reprodujo, y sus saltos nunca terminan.
+- Scroll libre por defecto; en pantallas táctiles, siempre el scroll nativo. Opcional para escritorio: un modo guiado donde un gesto, una flecha o un clic en el riel lleva hasta la siguiente toma estática.
 - Un solo h1 en la página; el copy y el primer póster en el HTML del servidor.
 
 Al terminar, haz el QA del Step 8 y corre pnpm build.
@@ -323,9 +335,9 @@ Al terminar, haz el QA del Step 8 y corre pnpm build.
 **Qué hace el motor** (`src/scripts/scroll-world.js`, adaptado del de la skill):
 
 - Descarga cada clip como Blob. Muchos hosts no sirven rangos de bytes; sin esto, `seekable` se queda en 0 y el video parece congelado.
-- Carga primero los clips más cercanos a tu posición, máximo 2 a la vez.
+- Precarga todos los clips desde el inicio, el más cercano a tu posición primero (máximo 2 a la vez), y nunca los descarta. Avisa el progreso con el evento `sw:progress`.
 - Mantiene el póster hasta que el clip pinta su primer fotograma, así no se ve la carga.
-- En iOS "prepara" el video (`playsinline`, `muted`) para que los saltos sí se pinten.
+- En iOS ceba cada clip apenas existe (`play()` y `pause()` en silencio, con `playsinline`) y lo reintenta en cada toque; en cada cuadro devuelve a su posición cualquier clip que se haya movido al cebarse. Sin esto, en iPhone solo se ven las fotos.
 - Hace un fundido corto en cada costura y recorta en móvil según el `focus` de cada toma estática.
 - Con reduced-motion o ahorro de datos, solo muestra pósters.
 
@@ -341,6 +353,7 @@ Los datos de cada toma estática (póster, clip, `focus`) viven en `src/data/sit
 - [ ] **Seekable:** `video.seekable.end(0) > 0` en todos los clips, y `currentTime` sigue al scroll, también hacia atrás.
 - [ ] **Móvil 390×844:** el sujeto de cada toma estática se ve; el texto no tapa lo importante.
 - [ ] **Reduced motion:** cero peticiones de video, solo pósters.
+- [ ] **iPhone real:** abre `/?debug` y recorre el paseo. Cada clip debe decir `rs=4`, `visible=sí` y `cebado=ok`. Un navegador emulado en la computadora no reproduce este problema.
 - [ ] **Consola:** sin errores.
 - [ ] **Build:** `pnpm build` sin errores.
 
@@ -378,6 +391,8 @@ Saldo inicial: 1.010 créditos (plan Plus). Saldo final: 536,25.
 4. **Las fotos pálidas dan videos pálidos.** El retoque con un solo prompt para todas fue lo que más mejoró el resultado.
 5. **El móvil recorta el 16:9.** Elige un `focus` por toma estática mirando cada fotograma. Aun así, en la última toma estática el kiosko de playa queda debajo del texto en el teléfono. La solución completa sería una cadena de clips vertical 9:16, a cerca del doble de costo.
 6. **Desde la web de Higgsfield un clic cuesta caro.** Lanza todo desde Codex, donde el costo ya está aprobado.
+7. **En iPhone los videos no aparecían.** Safari no muestra un video en pausa que nunca se reprodujo: hay que cebarlo (play → pause) en cuanto se descarga. Pruébalo siempre en un teléfono real, no solo en el emulador.
+8. **El peso importa en datos móviles.** 2K para escritorio, 720p para teléfono y un aviso de carga mientras bajan los clips.
 
 ---
 
