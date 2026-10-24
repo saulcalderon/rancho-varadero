@@ -1,43 +1,45 @@
-# Astro Starter Kit: Minimal
+# Rancho Varadero
+
+Sitio de [Rancho Varadero](https://wa.me/50376956521), un rancho de playa en primera fila frente al mar en Playa El Amatal, La Libertad, El Salvador, administrado por Alquileres MM.
+
+Es la demo de la charla **«Dynamic Scroll Website Generation»** en DevDay Exchange San Salvador (24 de octubre de 2026): el mismo sitio en dos versiones.
+
+| Ruta | Qué es |
+| --- | --- |
+| `/antes` · `/en/antes` | La versión básica: una plantilla genérica con las fotos tal cual. |
+| `/` · `/en/` | La versión con recorrido: al hacer scroll, la cámara camina por el rancho. |
+
+## Cómo funciona el recorrido
+
+El scroll no reproduce un video: mueve su `currentTime`. Siete fotos del rancho son las paradas, y seis clips generados con IA conectan cada parada con la siguiente. Cada clip empieza en el fotograma exacto donde termina el anterior, así que el recorrido se ve como una sola toma, hacia adelante o hacia atrás.
+
+1. **Fotos:** 8 fotos originales; quedaron 7, en el orden del recorrido (`media/originals/`).
+2. **Keyframes:** recorte o outpaint a 16:9, upscale y retoque de luz con GPT Image 2.5, con el mismo prompt para todas (`media/keyframes/07-final/`).
+3. **Clips:** MiniMax H3 en 2K, 8 s, con primer y último fotograma fijos y sin audio. Prompts y script en `media/clips/h3/`.
+4. **Web:** ffmpeg (GOP 6, CRF 30, BT.709, faststart) a `public/video/`, y el motor de scroll en `src/scripts/scroll-world.js`.
+
+Los videos y las imágenes se generaron con [Higgsfield](https://higgsfield.ai). El código lo escribió un agente (Claude Code) con dos skills incluidas en `.claude/skills/`:
+
+- [`landing-page-design`](https://github.com/elayadesign/ai-design-skills) de Elaya (MIT)
+- [`scroll-world`](https://github.com/oso95/scroll-world) de cyw (MIT)
+
+La referencia original es la landing de Arko de [midudev](https://github.com/midudev/mcp-higgsfield-landing).
+
+## Desarrollo
 
 ```sh
-pnpm create astro@latest -- --template minimal
+pnpm install
+pnpm dev       # http://localhost:4321
+pnpm build     # genera dist/
+pnpm preview
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Stack: Astro, Tailwind CSS 4 y Manrope servida localmente. Sin GSAP ni Lenis.
 
-## 🚀 Project Structure
+`SITE_URL` define la URL pública (canonical, hreflang, sitemap y JSON-LD). En Vercel, si no está definida, se usa la URL de producción del proyecto.
 
-Inside of your Astro project, you'll see the following folders and files:
+## Contenido
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+Los datos del rancho viven en `src/data/rancho.ts` (versión básica) y `src/data/sitio.ts` (versión con recorrido). Solo incluyen hechos confirmados por la administración; sin precios.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Las fotos pertenecen a Rancho Varadero y se usan con su permiso. El código de las skills mantiene su licencia MIT.
