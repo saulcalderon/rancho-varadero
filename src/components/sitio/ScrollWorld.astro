@@ -303,14 +303,17 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
   /* oscuro: degradado oscuro y texto blanco, como un título de cine. */
   html[data-velo='oscuro'] .sw-copylayer::before {
     width: min(64vw, 960px);
-    background: linear-gradient(90deg, rgb(20 16 12 / 0.74) 0%, rgb(20 16 12 / 0.5) 45%, transparent 100%);
+    background: linear-gradient(90deg, rgb(20 16 12 / 0.84) 0%, rgb(20 16 12 / 0.62) 45%, transparent 100%);
   }
   html[data-velo='oscuro'] .sw-copy :is(p, h2, .text-tinta, .text-tinta-suave, .link):not(li) {
     color: #fff;
-    text-shadow: 0 1px 12px rgb(20 16 12 / 0.45);
+    text-shadow:
+      0 1px 2px rgb(20 16 12 / 0.55),
+      0 2px 16px rgb(20 16 12 / 0.5);
   }
+  /* Las descripciones van en blanco pleno: sobre fotos claras el 82 % se perdía. */
   html[data-velo='oscuro'] .sw-copy .text-tinta-suave:not(li) {
-    color: rgb(255 255 255 / 0.82);
+    color: #fff;
   }
   html[data-velo='oscuro'] .sw-copy :is(.eyebrow, .text-teja) {
     color: #f3b98f;
@@ -361,7 +364,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       mask-image: linear-gradient(0deg, #000 50%, transparent 75%);
     }
     html[data-velo='oscuro'] .sw-copylayer::before {
-      background: linear-gradient(0deg, rgb(20 16 12 / 0.8) 0%, rgb(20 16 12 / 0.55) 45%, transparent 75%);
+      background: linear-gradient(0deg, rgb(20 16 12 / 0.88) 0%, rgb(20 16 12 / 0.68) 45%, transparent 78%);
     }
     html[data-velo='tarjeta'] .sw-card {
       padding: 20px;

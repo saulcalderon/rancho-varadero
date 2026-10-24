@@ -7,6 +7,17 @@ interface Props {
 
 const t = sitio[Astro.props.lang];
 const g = t.galeria;
+
+// Cuadrícula bento sin huecos: en escritorio 3×3 (el camino a la playa ocupa dos filas, la aérea dos columnas);
+// en tableta 2 columnas (aérea y sala a todo el ancho); en móvil una sola columna.
+const orden = ['piscinaCasa', 'corredor', 'caminoPlaya', 'casa', 'piscinaMar', 'aereo', 'sala'] as const;
+// Las fotos van en posición absoluta: la altura de cada fila la fijan solo las proporciones de las celdas.
+const forma: Partial<Record<(typeof orden)[number], string>> = {
+  caminoPlaya: 'aspect-[3/4] sm:row-span-2 sm:aspect-auto',
+  aereo: 'aspect-video sm:col-span-2 sm:aspect-[2/1] lg:aspect-auto',
+  sala: 'aspect-video sm:col-span-2 sm:aspect-[2/1] lg:col-span-1 lg:aspect-video',
+};
+const fotos = orden.map((id) => galeria.find((f) => f.id === id)!);
 ---
 
 <section aria-labelledby="galeria-titulo" class="px-4 py-24 md:px-12 xl:px-24">
@@ -16,11 +27,11 @@ const g = t.galeria;
       <h2 id="galeria-titulo" class="mt-4 text-3xl text-tinta lg:text-5xl">{g.titulo}</h2>
       <p class="mt-4 text-base text-tinta-suave lg:text-lg">{g.texto}</p>
     </div>
-    <ul class="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
+    <ul class="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
-        galeria.map((foto, i) => (
-          <li class="mb-4 break-inside-avoid" data-reveal style={`--d:${(i % 3) * 100}ms`}>
-            <figure>
+        fotos.map((foto, i) => (
+          <li class:list={['relative', forma[foto.id] ?? 'aspect-video']} data-reveal style={`--d:${(i % 3) * 100}ms`}>
+            <figure class="absolute inset-0">
               <img
                 src={foto.src}
                 width={foto.w}
@@ -28,7 +39,7 @@ const g = t.galeria;
                 alt={t.alt[foto.id]}
                 loading="lazy"
                 decoding="async"
-                class="h-auto w-full rounded-2xl bg-arena-2"
+                class="size-full rounded-2xl bg-arena-2 object-cover"
               />
               <figcaption class="sr-only">{t.alt[foto.id]}</figcaption>
             </figure>
