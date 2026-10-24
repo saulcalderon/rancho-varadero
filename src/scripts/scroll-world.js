@@ -41,6 +41,9 @@
       sticky working).
   11. Records iOS priming results (video[data-prime], container[data-primed]) and clip download errors
       (scene[data-error]) for the page's ?debug panel.
+  12. Preloads every clip from the start (nearest first, never dropped), primes each one as soon as it exists
+      and again on later touches, emits `sw:progress` ({ loaded, failed, total }) and toggles `.is-waiting`
+      while the current leg's clip isn't ready (no fake push-in on the still).
 
    USAGE
      mountScrollWorld(container, {
@@ -239,7 +242,13 @@ export function mountScrollWorld(container, config) {
     window.scrollTo({ top: top0 + anchorY(i), behavior: reduce ? 'auto' : 'smooth' });
   }
 
-  // ---- clip loading: queued, nearest first, max 2 in flight ----
+  // ---- clip loading: queued, nearest first, max 2 in flight; everything is preloaded from the start ----
+  const totalClips = SEGMENTS.filter(s => s.clip).length;
+  let loaded = 0, failed = 0;
+  function progress() {
+    container.dataset.loaded = loaded + '/' + totalClips;
+    container.dispatchEvent(new CustomEvent('sw:progress', { detail: { loaded, failed, total: noVideo ? 0 : totalClips } }));
+  }
   const pending = new Set();
   let inFlight = 0;
   function loadClip(s) {
@@ -258,8 +267,6 @@ export function mountScrollWorld(container, config) {
         if (d < bd) { bd = d; best = s; }
       });
       pending.delete(best);
-      // Scrolled away while it waited: drop it; read() re-queues it if we come back.
-      if (bd > 2.2 * vh) continue;
       fetchClip(best);
     }
   }
@@ -279,10 +286,13 @@ export function mountScrollWorld(container, config) {
         // Reveal the video (hide the still poster) only once a real frame has painted —
         // on iOS a seeked-but-never-played muted video stays blank.
         v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
-        v.addEventListener('loadeddata', () => { try { v.pause(); } catch (e) {} if (userReady) primeVideo(v); });
         s.el.appendChild(v); s.video = v; s.hasClip = true;
+        loaded++; progress();
+        // Prime right away: on iOS a paused video that never played stays at readyState 1 and its seeks never
+        // resolve. Muted inline play() is allowed without a gesture (Low Power Mode is retried on the next touch).
+        primeVideo(v);
       })
-      .catch((e) => { s.loading = false; s.el.dataset.error = String(e && e.message || e); })
+      .catch((e) => { s.loading = false; failed++; progress(); s.el.dataset.error = String(e && e.message || e); })
       .finally(() => { inFlight--; pump(); });
   }
 
@@ -313,10 +323,7 @@ export function mountScrollWorld(container, config) {
       s.el.style.zIndex = String(100 + i);
       const fx = s.fx0 + (s.fx1 - s.fx0) * local;
       if (Math.abs(fx - s.fx) > 0.05) { s.fx = fx; s.el.style.setProperty('--sw-fx', fx.toFixed(2) + '%'); }
-      if (s.clip && (!s.hasClip || !s.ready)) {
-        // Fallback motion for a leg whose clip isn't ready: slow push-in from identity.
-        s.img.style.transform = noVideo ? 'none' : `scale(${(1 + local * 0.1).toFixed(4)})`;
-      }
+      if (s.clip && (!s.hasClip || !s.ready)) s.img.style.transform = 'none';
     }
 
     let scrim = 0;
@@ -338,6 +345,7 @@ export function mountScrollWorld(container, config) {
     copylayer.style.setProperty('--sw-scrim', scrim.toFixed(3));
 
     const cur = SEGMENTS[ci];
+    container.classList.toggle('is-waiting', !noVideo && cur.kind === 'conn' && !!cur.clip && !(cur.hasClip && cur.ready));
     const near = clamp(cur.kind === 'dive' ? cur.si
       : (((y - cur.start) / (cur.end - cur.start)) > 0.5 ? cur.si + 1 : cur.si), 0, N - 1);
     if (near !== activeIndex) {
@@ -363,9 +371,14 @@ export function mountScrollWorld(container, config) {
       if (!s.hasClip || !s.ready || !s.video) continue;
       // Never queue a seek while the decoder is still resolving the last one.
       if (s.video.seeking) continue;
-      if (!s.visible && Math.abs(s.cur - s.target) < 0.002) continue;
-      s.cur += (s.target - s.cur) * (reduce ? 1 : 0.18);
+      // Clips only ever move by seeking: stop any playback left over from priming.
+      if (!s.video.paused && s.video.dataset.prime === 'ok') { try { s.video.pause(); } catch (e) {} }
       const dur = s.video.duration || 1;
+      // Off-screen clips still get corrected if priming left them away from their scroll position, so a leg
+      // never starts on a stale frame.
+      const settled = Math.abs(s.video.currentTime - clamp(s.cur, 0, 0.999) * dur) <= 0.05;
+      if (!s.visible && Math.abs(s.cur - s.target) < 0.002 && settled) continue;
+      s.cur += (s.target - s.cur) * (reduce ? 1 : 0.18);
       const t = clamp(s.cur, 0, 0.999) * dur;
       if (Math.abs(s.video.currentTime - t) > eps) { try { s.video.currentTime = t; } catch (e) {} }
     }
@@ -377,20 +390,23 @@ export function mountScrollWorld(container, config) {
   let userReady = false;
   function primeVideo(v) {
     if (!isMobile() || !v) return;
+    // Stop and rewind as soon as playback actually starts (the play() promise can resolve late and let the clip
+    // run to its end); raf() seeks the visible clip back to its scroll position on the next frame.
+    v.addEventListener('playing', () => { try { v.pause(); v.currentTime = 0; } catch (e) {} }, { once: true });
     // dataset.prime records the result for the ?debug panel (iOS Low Power Mode rejects play()).
     try {
       const p = v.play();
-      if (p && p.then) p.then(() => { v.dataset.prime = 'ok'; try { v.pause(); } catch (e) {} }).catch((e) => { v.dataset.prime = 'rechazado: ' + (e && e.name); });
+      if (p && p.then) p.then(() => { v.dataset.prime = 'ok'; }).catch((e) => { v.dataset.prime = 'rechazado: ' + (e && e.name); });
     } catch (e) { v.dataset.prime = 'error: ' + (e && e.name); }
   }
-  function onFirstGesture() {
-    if (userReady) return;
+
+  function onGesture() {
     userReady = true;
     container.dataset.primed = '1';
-    SEGMENTS.forEach(s => primeVideo(s.video));
+    SEGMENTS.forEach(s => { if (s.video && s.video.dataset.prime !== 'ok') primeVideo(s.video); });
   }
-  window.addEventListener('pointerdown', onFirstGesture, { once: true, passive: true });
-  window.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
+  window.addEventListener('pointerdown', onGesture, { passive: true });
+  window.addEventListener('touchstart', onGesture, { passive: true });
 
   if (particles) seedParticles(particles, reduce || coarse);
   window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(read); } }, { passive: true });
@@ -405,6 +421,8 @@ export function mountScrollWorld(container, config) {
   window.addEventListener('load', layout);
   layout();
   container.classList.add('is-mounted');
+  progress();
+  if (!noVideo) SEGMENTS.forEach(s => loadClip(s));
   // Deep link (e.g. /#reserva): anchors only get their position now, so scroll to it again.
   if (location.hash) {
     const target = anchors.find(a => a && '#' + a.id === decodeURIComponent(location.hash));

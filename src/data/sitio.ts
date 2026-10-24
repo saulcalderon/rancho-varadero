@@ -85,6 +85,8 @@ export const sitio = {
       label: 'Recorrido por Rancho Varadero',
       railLabel: 'Paradas del recorrido',
       pista: 'Desliza para recorrer el rancho',
+      cargando: 'Cargando el recorrido',
+      cargandoVideo: 'Cargando video…',
       // Parada 0: el hero. Su titular es el único h1 de la página.
       hero: {
         lugar: 'Inicio',
@@ -263,6 +265,8 @@ export const sitio = {
       label: 'A walk through Rancho Varadero',
       railLabel: 'Tour stops',
       pista: 'Scroll to walk through the house',
+      cargando: 'Loading the tour',
+      cargandoVideo: 'Loading video…',
       hero: {
         lugar: 'Home',
         marca: 'Rancho Varadero · Playa El Amatal',

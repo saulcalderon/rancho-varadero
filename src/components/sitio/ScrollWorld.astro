@@ -36,6 +36,8 @@ const config = {
     scroll: i === 0 ? ritmo.primera : i === total - 1 ? ritmo.ultima : ritmo.parada,
   })),
   connectors: paradas.slice(0, -1).map((parada) => parada.clip),
+  // En teléfonos y tabletas, los mismos clips a 1280 px (la mitad de peso; en vertical solo se ve una franja).
+  connectorsMobile: paradas.slice(0, -1).map((parada) => (parada.clip ?? '').replace('.mp4', '-m.mp4')),
 };
 
 // Escenas en el mismo orden que la cadena del motor: parada 0, tramo 1, parada 1, tramo 2 … parada 6.
@@ -197,9 +199,17 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       }
     </nav>
 
-    <div class="sw-hint" aria-hidden="true">
+    <!-- Mientras se descargan los clips, la pista muestra el progreso («Cargando el recorrido · 2/6»). -->
+    <div class="sw-hint" aria-hidden="true" data-pista={p.pista} data-cargando={p.cargando}>
+      <b class="sw-hint__spin"></b>
       <span>{p.pista}</span>
       <i></i>
+    </div>
+
+    <!-- Si llegas a un tramo cuyo clip aún no está listo, en lugar del vídeo se ve la foto con este aviso. -->
+    <div class="sw-espera" role="status">
+      <b class="sw-hint__spin"></b>
+      <span>{p.cargandoVideo}</span>
     </div>
   </div>
 
@@ -359,6 +369,74 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     }
   }
 
+  /* ---- Carga de los clips ---- */
+  .sw-hint__spin {
+    display: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+    border-top-color: currentColor;
+    animation: sw-spin 900ms linear infinite;
+  }
+  @keyframes sw-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .sw-hint.is-cargando {
+    flex-direction: row;
+  }
+  .sw-hint.is-cargando .sw-hint__spin {
+    display: block;
+  }
+  .sw-hint.is-cargando i {
+    display: none;
+  }
+  .sw-espera {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    background: rgb(20 16 12 / 0.72);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 300ms var(--ease-fluid);
+    pointer-events: none;
+  }
+  .sw-espera .sw-hint__spin {
+    display: block;
+  }
+  .sw-root.is-waiting .sw-espera {
+    opacity: 1;
+  }
+  @media (max-width: 860px) {
+    /* En móvil la pista no se muestra; mientras carga, el progreso aparece arriba, bajo el menú. */
+    .sw-hint.is-cargando {
+      display: flex;
+      top: 96px;
+      bottom: auto;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: rgb(20 16 12 / 0.6);
+      color: #fff;
+      letter-spacing: 0.08em;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sw-hint__spin {
+      animation-duration: 2400ms;
+    }
+  }
+
   /* Sin JS: el paseo no puede montarse; se ve la primera parada con su texto y el resto de la página debajo. */
   html:not(.js) .sw-viewport {
     position: relative;
@@ -378,9 +456,24 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
 
   const world = document.querySelector<HTMLElement>('[data-world]');
   if (world?.dataset.config) {
+    carga(world); // antes de montar: así recibe el primer aviso de progreso (0/6)
     mountScrollWorld(world, JSON.parse(world.dataset.config));
     guiado(world);
     if (new URLSearchParams(location.search).has('debug')) depurar(world);
+  }
+
+  /* Progreso de descarga de los clips en la pista del inicio («Cargando el recorrido · 2/6»). */
+  function carga(root: HTMLElement) {
+    const hint = root.querySelector<HTMLElement>('.sw-hint');
+    const texto = hint?.querySelector('span');
+    if (!hint || !texto) return;
+    const pinta = (e: Event) => {
+      const { loaded, failed, total } = (e as CustomEvent<{ loaded: number; failed: number; total: number }>).detail;
+      const listo = !total || loaded + failed >= total;
+      hint.classList.toggle('is-cargando', !listo);
+      texto.textContent = listo ? (hint.dataset.pista ?? '') : `${hint.dataset.cargando} · ${loaded}/${total}`;
+    };
+    root.addEventListener('sw:progress', pinta);
   }
 
   /*
