@@ -39,6 +39,8 @@
       before JS. The page's utilities and unlayered theme tokens win over it. The
       html/body overflow rule was dropped (the page uses overflow-x: clip, which keeps
       sticky working).
+  11. Records iOS priming results (video[data-prime], container[data-primed]) and clip download errors
+      (scene[data-error]) for the page's ?debug panel.
 
    USAGE
      mountScrollWorld(container, {
@@ -280,7 +282,7 @@ export function mountScrollWorld(container, config) {
         v.addEventListener('loadeddata', () => { try { v.pause(); } catch (e) {} if (userReady) primeVideo(v); });
         s.el.appendChild(v); s.video = v; s.hasClip = true;
       })
-      .catch(() => { s.loading = false; })
+      .catch((e) => { s.loading = false; s.el.dataset.error = String(e && e.message || e); })
       .finally(() => { inFlight--; pump(); });
   }
 
@@ -375,12 +377,16 @@ export function mountScrollWorld(container, config) {
   let userReady = false;
   function primeVideo(v) {
     if (!isMobile() || !v) return;
-    try { const p = v.play(); if (p && p.then) p.then(() => { try { v.pause(); } catch (e) {} }).catch(() => {}); }
-    catch (e) {}
+    // dataset.prime records the result for the ?debug panel (iOS Low Power Mode rejects play()).
+    try {
+      const p = v.play();
+      if (p && p.then) p.then(() => { v.dataset.prime = 'ok'; try { v.pause(); } catch (e) {} }).catch((e) => { v.dataset.prime = 'rechazado: ' + (e && e.name); });
+    } catch (e) { v.dataset.prime = 'error: ' + (e && e.name); }
   }
   function onFirstGesture() {
     if (userReady) return;
     userReady = true;
+    container.dataset.primed = '1';
     SEGMENTS.forEach(s => primeVideo(s.video));
   }
   window.addEventListener('pointerdown', onFirstGesture, { once: true, passive: true });
