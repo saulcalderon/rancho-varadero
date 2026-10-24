@@ -46,6 +46,9 @@ const escenas = paradas.flatMap((parada, i) =>
     : [{ kind: 'dive', poster: parada.poster, i }],
 );
 
+// Posición de la tarjeta de cada parada (escritorio): justify/align del contenedor de la parada.
+const pos = (i: number) => ({ 'data-x': paradas[i].texto[0], 'data-y': paradas[i].texto[1] });
+
 const pill = 'rounded-full bg-arena/80 px-3 py-1 text-sm font-medium text-tinta ring-1 ring-tinta/10 backdrop-blur-md';
 const meta = 'flex items-center gap-2 text-xs font-semibold tracking-widest text-tinta-suave uppercase';
 const titulo = 'mt-4 max-w-xl text-3xl text-tinta md:text-4xl xl:text-5xl';
@@ -87,7 +90,8 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
 
     <div class="sw-copylayer">
       <!-- 0 · Hero: el único h1 de la página. -->
-      <article class="sw-copy sw-copy--hero">
+      <article class="sw-copy sw-copy--hero" {...pos(0)}>
+        <div class="sw-card">
         <h1>
           <span class="eyebrow block">{p.hero.marca}</span>{' '}
           <span
@@ -111,11 +115,13 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
         <ul class="mt-6 flex flex-wrap gap-2">
           {p.hero.prueba.map((x) => <li class={pill}>{x}</li>)}
         </ul>
+        </div>
       </article>
 
       {
         p.paradas.map((parada, k) => (
-          <article class="sw-copy">
+          <article class="sw-copy" {...pos(k + 1)}>
+            <div class="sw-card">
             <p class={meta}>
               <span class="tabular-nums">
                 {pad(k + 2)} / {pad(total)}
@@ -132,12 +138,14 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
                 ))}
               </ul>
             )}
+            </div>
           </article>
         ))
       }
 
       <!-- 6 · Final: capacidad, parqueo, ubicación y CTA. -->
-      <article class="sw-copy">
+      <article class="sw-copy" {...pos(total - 1)}>
+        <div class="sw-card">
         <p class={meta}>
           <span class="tabular-nums">{pad(total)} / {pad(total)}</span>
           <span aria-hidden="true" class="size-1 rounded-full bg-teja"></span>
@@ -172,19 +180,32 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
             ))
           }
         </p>
+        </div>
       </article>
     </div>
 
-    <nav class="sw-route hidden md:flex" aria-label={p.railLabel}>
-      {
-        paradas.map((parada, i) => (
-          <a href={`#${parada.id}`} class="sw-route__dot" aria-current={i === 0 ? 'step' : undefined}>
-            <span class="sw-route__label">{lugares[i]}</span>
-            <i />
-          </a>
-        ))
-      }
-    </nav>
+    <!-- Dock inferior: la línea se llena con el recorrido (--sw-r, 0 → 1, lo pone el motor) y cada parada es un enlace.
+         En móvil solo se ve la parada actual. El motor marca la activa con .is-active. -->
+    <div class="sw-dock">
+      <nav class="sw-route" aria-label={p.railLabel}>
+        <span class="sw-dock__line" aria-hidden="true"><i></i></span>
+        {
+          paradas.map((parada, i) => (
+            <a href={`#${parada.id}`} class="sw-route__dot" aria-current={i === 0 ? 'step' : undefined}>
+              <span class="sw-route__num tabular-nums">
+                {pad(i + 1)}
+                <span class="sw-route__of"> / {pad(total)}</span>
+              </span>
+              <span class="sw-route__label">{lugares[i]}</span>
+            </a>
+          ))
+        }
+      </nav>
+      <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-sm shrink-0 rounded-lg">
+        <Icon name="whatsapp" class="size-4" />
+        {t.reservarCorto}
+      </a>
+    </div>
 
     <div class="sw-hint" aria-hidden="true">
       <span>{p.pista}</span>
@@ -209,22 +230,6 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     --sw-font-body: var(--font-sans);
   }
 
-  /* El hero puede ser algo más ancho que el resto de paradas para que el titular respire. */
-  @media (min-width: 861px) {
-    .sw-copy {
-      left: 48px;
-    }
-    .sw-copy--hero {
-      width: min(50vw, 680px);
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .sw-copy {
-      left: 96px;
-    }
-  }
-
   /* Sin JS: el paseo no puede montarse; se ve la primera parada con su texto y el resto de la página debajo. */
   html:not(.js) .sw-viewport {
     position: relative;
@@ -233,7 +238,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     margin-top: 0;
   }
   html:not(.js) .sw-copy:not(.sw-copy--hero),
-  html:not(.js) .sw-route,
+  html:not(.js) .sw-dock,
   html:not(.js) .sw-hint {
     display: none;
   }

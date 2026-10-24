@@ -39,6 +39,7 @@
       before JS. The page's utilities and unlayered theme tokens win over it. The
       html/body overflow rule was dropped (the page uses overflow-x: clip, which keeps
       sticky working).
+  11. Sets `--sw-r` (0–1) on the container: the position along the route, for the dock's progress line.
 
    USAGE
      mountScrollWorld(container, {
@@ -348,6 +349,10 @@ export function mountScrollWorld(container, config) {
       if (SECTIONS[near].accent) container.style.setProperty('--sw-accent', SECTIONS[near].accent);
       container.dataset.stop = String(near);
     }
+    // Route position for the dock line: 0 at the first stop, 1 at the last. A stop holds its value; a leg moves it
+    // from its stop to the next one, so the line reaches each stop's label exactly when the camera arrives.
+    const legT = cur.kind === 'conn' ? clamp((y - cur.start) / (cur.end - cur.start)) : 0;
+    container.style.setProperty('--sw-r', (N > 1 ? (cur.si + legT) / (N - 1) : 0).toFixed(4));
     if (scrollbarFill) scrollbarFill.style.transform = `scaleX(${clamp(y / (totalW * vh))})`;
     hint.style.opacity = String(clamp(1 - y / (0.5 * vh)));
     if (particles) particles.style.transform = `translate3d(0, ${-y * 0.05}px, 0)`;
