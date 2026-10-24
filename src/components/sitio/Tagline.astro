@@ -1,0 +1,43 @@
+---
+// Frase principal (B11): cada palabra pasa del tono apagado a la tinta, una a una y en orden de lectura.
+import { sitio, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const t = sitio[Astro.props.lang].tagline;
+const text = t.lineas.join(' ');
+---
+
+<section aria-label={t.label} class="px-4 py-24 md:px-12 xl:px-24">
+  <div class="mx-auto flex min-h-[70svh] max-w-[680px] items-center">
+    <p class="sr-only">{text}</p>
+    <p data-words aria-hidden="true" class="text-4xl font-semibold tracking-tight text-balance lg:text-5xl">
+      {
+        t.lineas.map((linea) => (
+          <span class="block">
+            {linea.split(' ').map((word) => (
+              <>
+                <span data-word class="word">
+                  {word}
+                </span>{' '}
+              </>
+            ))}
+          </span>
+        ))
+      }
+    </p>
+  </div>
+</section>
+
+<style>
+  .word {
+    color: color-mix(in oklab, var(--color-tinta) 28%, transparent);
+    transition: color 700ms var(--ease-fluid);
+  }
+
+  .word:global(.is-lit) {
+    color: var(--color-tinta);
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+import { galeria, sitio, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const s = t.servicios;
+const destacado = s.items.find((item) => item.icono === 'waves')!;
+const resto = s.items.filter((item) => item !== destacado);
+const foto = galeria.find((f) => f.id === 'piscinaMar')!;
+---
+
+<section id="servicios" aria-labelledby="servicios-titulo" class="scroll-mt-24 px-4 py-24 md:px-12 xl:px-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="max-w-[680px]" data-reveal>
+      <p class="eyebrow">{s.eyebrow}</p>
+      <h2 id="servicios-titulo" class="mt-4 text-3xl text-tinta lg:text-5xl">{s.titulo}</h2>
+      <p class="mt-4 text-base text-tinta-suave lg:text-lg">{s.texto}</p>
+    </div>
+
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <li
+        class="relative flex min-h-80 flex-col justify-end overflow-hidden rounded-3xl bg-tinta sm:col-span-2 lg:row-span-3"
+        data-reveal
+      >
+        <img
+          src={foto.src}
+          width={foto.w}
+          height={foto.h}
+          alt={t.alt[foto.id]}
+          loading="lazy"
+          decoding="async"
+          class="absolute inset-0 size-full object-cover"
+        />
+        <div class="relative m-2 rounded-2xl bg-arena/90 p-6 backdrop-blur-md">
+          <Icon name={destacado.icono as IconName} class="size-6 text-piscina" />
+          <h3 class="mt-4 text-xl text-tinta">{destacado.titulo}</h3>
+          <p class="mt-2 text-sm text-tinta-suave">{destacado.texto}</p>
+        </div>
+      </li>
+      {
+        resto.map((item, i) => (
+          <li class="flex flex-col rounded-2xl bg-white/70 p-6 ring-1 ring-tinta/10" data-reveal style={`--d:${(i % 2) * 100}ms`}>
+            <span class="grid size-12 place-items-center rounded-xl bg-piscina/10 text-piscina">
+              <Icon name={item.icono as IconName} class="size-6" />
+            </span>
+            <h3 class="mt-6 text-lg text-tinta">{item.titulo}</h3>
+            <p class="mt-2 text-sm text-tinta-suave">{item.texto}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

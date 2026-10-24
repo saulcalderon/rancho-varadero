@@ -1,0 +1,59 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-arena-2 px-4 py-16 md:px-12 xl:px-24">
+  <div class="mx-auto grid max-w-6xl gap-12 md:grid-cols-3">
+    <div>
+      <a href="#inicio" class="inline-flex items-center gap-2 text-tinta" aria-label={t.volverInicio}>
+        <Logo class="size-8" />
+        <span class="text-lg font-bold">{t.marca}</span>
+      </a>
+      <p class="mt-4 max-w-xs text-sm text-tinta-suave">{t.footer.administra}</p>
+    </div>
+
+    <address class="flex flex-col gap-3 text-sm text-tinta-suave">
+      <p class="eyebrow">{t.footer.contacto}</p>
+      <p class="inline-flex items-center gap-2">
+        <Icon name="mapPin" class="size-4 text-piscina" />
+        {t.footer.ubicacion}
+      </p>
+      <a href={whatsapp(lang)} target="_blank" rel="noopener" class="link inline-flex w-max items-center gap-2 text-tinta">
+        <Icon name="whatsapp" class="size-4 text-piscina" />
+        WhatsApp {telefonos[0].numero}
+      </a>
+      {
+        telefonos.map((tel) => (
+          <a href={tel.href} class="link inline-flex w-max items-center gap-2 text-tinta">
+            <Icon name="phone" class="size-4 text-piscina" />
+            {tel.numero}
+          </a>
+        ))
+      }
+    </address>
+
+    <div class="flex flex-col items-start gap-3 text-sm md:items-end">
+      <a href={t.idioma.otroHref} hreflang={t.idioma.otroLang} lang={t.idioma.otroLang} class="link inline-flex items-center gap-2 text-tinta">
+        <Icon name="globe" class="size-4" />
+        {t.idioma.otroNombre}
+      </a>
+      <a href="#inicio" class="link inline-flex items-center gap-2 text-tinta">
+        <Icon name="arrowUp" class="size-4" />
+        {t.footer.volverArriba}
+      </a>
+    </div>
+  </div>
+  <p class="mx-auto mt-12 max-w-6xl text-xs text-tinta-suave">
+    © {year} Rancho Varadero · Alquileres MM. {t.footer.derechos}
+  </p>
+</footer>

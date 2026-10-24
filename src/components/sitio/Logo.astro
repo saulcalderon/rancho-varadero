@@ -1,0 +1,22 @@
+---
+// Marca de Rancho Varadero: el tejado de terracota sobre las olas, en el azul de la piscina. También es el favicon.
+interface Props {
+  class?: string;
+}
+const { class: className = 'size-8' } = Astro.props;
+---
+
+<svg class={className} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+  <rect width="64" height="64" rx="16" fill="#1A6BAD"></rect>
+  <path d="M14 31 32 17l18 14" fill="none" stroke="#F0A57D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"
+  ></path>
+  <path d="M14 41c4.5 0 4.5-3 9-3s4.5 3 9 3 4.5-3 9-3 4.5 3 9 3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"
+  ></path>
+  <path
+    d="M14 50c4.5 0 4.5-3 9-3s4.5 3 9 3 4.5-3 9-3 4.5 3 9 3"
+    fill="none"
+    stroke="#fff"
+    stroke-width="4"
+    stroke-linecap="round"
+    opacity=".55"></path>
+</svg>

@@ -1,0 +1,43 @@
+---
+// 404 bilingüe con la marca. No se indexa.
+import Layout from '../layouts/Layout.astro';
+import Logo from '../components/sitio/Logo.astro';
+import Icon from '../components/sitio/Icon.astro';
+import { rutas, sitio } from '../data/sitio';
+import poster from '../assets/paseo/paseo-6.webp';
+
+const es = sitio.es.noEncontrada;
+const en = sitio.en.noEncontrada;
+---
+
+<Layout lang="es" title={es.title} description={es.texto} noindex>
+  <main id="contenido" class="grid min-h-svh lg:grid-cols-2">
+    <div class="flex flex-col justify-between gap-12 px-4 py-12 md:px-12 xl:px-24">
+      <a href={rutas.es} class="inline-flex w-max items-center gap-2 text-tinta" aria-label={sitio.es.volverInicio}>
+        <Logo class="size-8" />
+        <span class="text-lg font-bold">Rancho Varadero</span>
+      </a>
+      <div class="max-w-[680px]">
+        <p class="eyebrow">{es.eyebrow}</p>
+        <h1 class="mt-4 text-4xl text-tinta lg:text-6xl">{es.titulo}</h1>
+        <p class="mt-4 text-base text-tinta-suave lg:text-lg">{es.texto}</p>
+        <a href={rutas.es} class="btn btn-primary btn-lg mt-8">
+          <Icon name="arrowLeft" class="size-5" />
+          {es.volver}
+        </a>
+        <div lang="en" class="mt-12 rounded-2xl bg-white/70 p-6 ring-1 ring-tinta/10">
+          <p class="text-lg font-semibold text-tinta">{en.titulo}</p>
+          <p class="mt-2 text-sm text-tinta-suave">{en.texto}</p>
+          <a href={rutas.en} class="link mt-4 inline-flex items-center gap-2 text-sm font-semibold text-tinta">
+            <Icon name="arrowLeft" />
+            {en.volver}
+          </a>
+        </div>
+      </div>
+      <p class="text-xs text-tinta-suave">Playa El Amatal, La Libertad, El Salvador</p>
+    </div>
+    <div class="relative hidden lg:block">
+      <img src={poster.src} width={poster.width} height={poster.height} alt="" class="absolute inset-0 size-full object-cover" />
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,40 @@
+---
+import Icon from './Icon.astro';
+import { sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+---
+
+<section aria-labelledby="cta-titulo" class="px-4 pb-24 md:px-12 xl:px-24">
+  <div class="mx-auto max-w-6xl rounded-3xl bg-tinta px-6 py-16 text-arena md:px-16 md:py-24" data-reveal>
+    <div class="max-w-[680px]">
+      <h2 id="cta-titulo" class="text-3xl lg:text-5xl">
+        {t.cta.titulo[0]}<br />{' '}
+        {t.cta.titulo[1]}
+      </h2>
+      <p class="mt-6 text-base text-arena/75 lg:text-lg">{t.cta.texto}</p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href={whatsapp(lang)} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+          <Icon name="whatsapp" class="size-5" />
+          {t.reservar}
+        </a>
+      </div>
+      <p class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-arena/75">
+        <span>{t.paseo.final.telefonosLabel}:</span>
+        {
+          telefonos.map((tel) => (
+            <a href={tel.href} class="link inline-flex items-center gap-2 font-semibold text-arena">
+              <Icon name="phone" />
+              {tel.numero}
+            </a>
+          ))
+        }
+      </p>
+    </div>
+  </div>
+</section>

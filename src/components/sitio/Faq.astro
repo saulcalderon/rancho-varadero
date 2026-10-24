@@ -1,0 +1,32 @@
+---
+import Icon from './Icon.astro';
+import { sitio, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const f = sitio[Astro.props.lang].faq;
+---
+
+<section id="preguntas" aria-labelledby="faq-titulo" class="scroll-mt-24 px-4 py-24 md:px-12 xl:px-24">
+  <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[2fr_3fr]">
+    <div data-reveal>
+      <p class="eyebrow">{f.eyebrow}</p>
+      <h2 id="faq-titulo" class="mt-4 text-3xl text-tinta lg:text-5xl">{f.titulo}</h2>
+    </div>
+    <div class="flex flex-col gap-2" data-reveal>
+      {
+        f.items.map((item) => (
+          <details class="faq group rounded-2xl bg-white/70 ring-1 ring-tinta/10" name="faq">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-lg font-semibold text-tinta">
+              <span>{item.q}</span>
+              <Icon name="plus" class="faq-icon size-5 shrink-0 text-piscina" />
+            </summary>
+            <p class="px-6 pb-6 text-base text-tinta-suave">{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

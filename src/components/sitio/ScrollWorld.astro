@@ -1,0 +1,247 @@
+---
+// Paseo por el rancho: 7 paradas (fotogramas fijos) unidas por 6 tramos de vídeo que avanzan y retroceden con el scroll.
+// El motor (src/scripts/scroll-world.js) adopta este marcado: así el h1, el copy y el primer póster están en el HTML.
+// Paradas = `sections` SIN clip; tramos = `connectors` (paseo-k va de la parada k-1 a la parada k).
+import Icon from './Icon.astro';
+import { paradas, ritmo, sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const p = t.paseo;
+const wa = whatsapp(lang);
+const total = paradas.length;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const lugares = [p.hero.lugar, ...p.paradas.map((x) => x.lugar), p.final.lugar];
+
+const config = {
+  diveScroll: ritmo.parada,
+  connScroll: ritmo.tramo,
+  crossfade: ritmo.crossfade,
+  nav: false,
+  atmosphere: false,
+  progress: false,
+  sections: paradas.map((parada, i) => ({
+    id: parada.id,
+    label: lugares[i],
+    still: parada.poster.src,
+    focus: parada.focus,
+    scroll: i === 0 ? ritmo.primera : i === total - 1 ? ritmo.ultima : ritmo.parada,
+  })),
+  connectors: paradas.slice(0, -1).map((parada) => parada.clip),
+};
+
+// Escenas en el mismo orden que la cadena del motor: parada 0, tramo 1, parada 1, tramo 2 … parada 6.
+// El póster de un tramo es el de la parada de la que sale (= primer fotograma de su clip).
+const escenas = paradas.flatMap((parada, i) =>
+  i < total - 1
+    ? [
+        { kind: 'dive', poster: parada.poster, i },
+        { kind: 'conn', poster: parada.poster, i },
+      ]
+    : [{ kind: 'dive', poster: parada.poster, i }],
+);
+
+const pill = 'rounded-full bg-arena/80 px-3 py-1 text-sm font-medium text-tinta ring-1 ring-tinta/10 backdrop-blur-md';
+const meta = 'flex items-center gap-2 text-xs font-semibold tracking-widest text-tinta-suave uppercase';
+const titulo = 'mt-4 max-w-xl text-3xl text-tinta md:text-4xl xl:text-5xl';
+const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
+---
+
+<section id="recorrido" data-world data-config={JSON.stringify(config)} aria-label={p.label} class="sw-root">
+  <div class="sw-viewport">
+    <div class="sw-sky" aria-hidden="true"></div>
+
+    <div class="sw-stage" aria-hidden="true">
+      {
+        escenas.map((escena, k) => (
+          <div class="sw-scene" style={k === 0 ? 'opacity: 1; --sw-fx: ' + paradas[0].focus + '%' : undefined}>
+            {k === 0 ? (
+              <img
+                class="sw-scene__still"
+                src={escena.poster.src}
+                width={escena.poster.width}
+                height={escena.poster.height}
+                alt=""
+                decoding="async"
+                fetchpriority="high"
+              />
+            ) : (
+              <img
+                class="sw-scene__still"
+                data-src={escena.poster.src}
+                width={escena.poster.width}
+                height={escena.poster.height}
+                alt=""
+                decoding="async"
+              />
+            )}
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="sw-copylayer">
+      <!-- 0 · Hero: el único h1 de la página. -->
+      <article class="sw-copy sw-copy--hero">
+        <h1>
+          <span class="eyebrow block">{p.hero.marca}</span>{' '}
+          <span
+            class="mt-4 block max-w-[680px] bg-linear-to-r from-black to-[#666666] bg-clip-text pb-1 text-4xl text-transparent md:text-5xl xl:text-6xl"
+          >
+            {
+              p.hero.titulo.map((linea, k) => (
+                <>
+                  {k > 0 && <><br />{' '}</>}
+                  {linea}
+                </>
+              ))
+            }
+          </span>
+        </h1>
+        <p class="mt-4 max-w-lg text-base text-tinta-suave lg:text-lg">{p.hero.texto}</p>
+        <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-lg mt-6">
+          <Icon name="whatsapp" class="size-5" />
+          {t.reservar}
+        </a>
+        <ul class="mt-6 flex flex-wrap gap-2">
+          {p.hero.prueba.map((x) => <li class={pill}>{x}</li>)}
+        </ul>
+      </article>
+
+      {
+        p.paradas.map((parada, k) => (
+          <article class="sw-copy">
+            <p class={meta}>
+              <span class="tabular-nums">
+                {pad(k + 2)} / {pad(total)}
+              </span>
+              <span aria-hidden="true" class="size-1 rounded-full bg-teja" />
+              <span class="text-teja">{parada.eyebrow}</span>
+            </p>
+            <h2 class={titulo}>{parada.titulo}</h2>
+            <p class={texto}>{parada.texto}</p>
+            {parada.pills.length > 0 && (
+              <ul class="mt-6 flex flex-wrap gap-2">
+                {parada.pills.map((x) => (
+                  <li class={pill}>{x}</li>
+                ))}
+              </ul>
+            )}
+          </article>
+        ))
+      }
+
+      <!-- 6 · Final: capacidad, parqueo, ubicación y CTA. -->
+      <article class="sw-copy">
+        <p class={meta}>
+          <span class="tabular-nums">{pad(total)} / {pad(total)}</span>
+          <span aria-hidden="true" class="size-1 rounded-full bg-teja"></span>
+          <span class="text-teja">{p.final.eyebrow}</span>
+        </p>
+        <h2 class={titulo}>{p.final.titulo}</h2>
+        <p class={texto}>{p.final.texto}</p>
+        <!-- En móvil se omiten: repiten el texto de arriba y alargan demasiado el bloque. -->
+        <ul class="mt-6 hidden flex-wrap gap-2 md:flex">
+          {p.final.pills.map((x) => <li class={pill}>{x}</li>)}
+        </ul>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+            <Icon name="whatsapp" class="size-5" />
+            {t.reservar}
+          </a>
+          <a href={telefonos[0].href} class="btn btn-ghost btn-lg">
+            <Icon name="phone" class="size-5" />
+            {t.llamar}
+          </a>
+        </div>
+        <p class="mt-4 text-sm text-tinta-suave">
+          {p.final.telefonosLabel}:{' '}
+          {
+            telefonos.map((tel, k) => (
+              <>
+                {k > 0 && <span aria-hidden="true"> · </span>}
+                <a href={tel.href} class="link font-semibold whitespace-nowrap text-tinta">
+                  {tel.numero}
+                </a>
+              </>
+            ))
+          }
+        </p>
+      </article>
+    </div>
+
+    <nav class="sw-route hidden md:flex" aria-label={p.railLabel}>
+      {
+        paradas.map((parada, i) => (
+          <a href={`#${parada.id}`} class="sw-route__dot" aria-current={i === 0 ? 'step' : undefined}>
+            <span class="sw-route__label">{lugares[i]}</span>
+            <i />
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="sw-hint" aria-hidden="true">
+      <span>{p.pista}</span>
+      <i></i>
+    </div>
+  </div>
+
+  <!-- Distancia de scroll del paseo. Los anclajes (#inicio, #descanso…) los coloca el motor en la mitad de cada parada. -->
+  <div class="sw-track">
+    {paradas.map((parada) => <span class="sw-anchor" id={parada.id} data-sw-anchor={parada.id} />)}
+  </div>
+</section>
+
+<style is:global>
+  /* Tema del motor mapeado a los tokens del sitio (sin capa: gana a los valores por defecto de @layer sw). */
+  .sw-root {
+    --sw-bg: var(--color-arena);
+    --sw-ink: var(--color-tinta);
+    --sw-ink-soft: var(--color-tinta-suave);
+    --sw-accent: var(--color-piscina);
+    --sw-font-display: var(--font-sans);
+    --sw-font-body: var(--font-sans);
+  }
+
+  /* El hero puede ser algo más ancho que el resto de paradas para que el titular respire. */
+  @media (min-width: 861px) {
+    .sw-copy {
+      left: 48px;
+    }
+    .sw-copy--hero {
+      width: min(50vw, 680px);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .sw-copy {
+      left: 96px;
+    }
+  }
+
+  /* Sin JS: el paseo no puede montarse; se ve la primera parada con su texto y el resto de la página debajo. */
+  html:not(.js) .sw-viewport {
+    position: relative;
+  }
+  html:not(.js) .sw-track {
+    margin-top: 0;
+  }
+  html:not(.js) .sw-copy:not(.sw-copy--hero),
+  html:not(.js) .sw-route,
+  html:not(.js) .sw-hint {
+    display: none;
+  }
+</style>
+
+<script>
+  import { mountScrollWorld } from '../../scripts/scroll-world.js';
+
+  const world = document.querySelector<HTMLElement>('[data-world]');
+  if (world?.dataset.config) mountScrollWorld(world, JSON.parse(world.dataset.config));
+</script>

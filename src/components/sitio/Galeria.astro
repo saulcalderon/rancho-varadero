@@ -1,0 +1,40 @@
+---
+import { galeria, sitio, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const t = sitio[Astro.props.lang];
+const g = t.galeria;
+---
+
+<section aria-labelledby="galeria-titulo" class="px-4 py-24 md:px-12 xl:px-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="max-w-[680px]" data-reveal>
+      <p class="eyebrow">{g.eyebrow}</p>
+      <h2 id="galeria-titulo" class="mt-4 text-3xl text-tinta lg:text-5xl">{g.titulo}</h2>
+      <p class="mt-4 text-base text-tinta-suave lg:text-lg">{g.texto}</p>
+    </div>
+    <ul class="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
+      {
+        galeria.map((foto, i) => (
+          <li class="mb-4 break-inside-avoid" data-reveal style={`--d:${(i % 3) * 100}ms`}>
+            <figure>
+              <img
+                src={foto.src}
+                width={foto.w}
+                height={foto.h}
+                alt={t.alt[foto.id]}
+                loading="lazy"
+                decoding="async"
+                class="h-auto w-full rounded-2xl bg-arena-2"
+              />
+              <figcaption class="sr-only">{t.alt[foto.id]}</figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,227 @@
+---
+// Versión "antes": una landing genérica de plantilla, sin skills de diseño ni video.
+// Es el punto de partida de la charla; no la mejores.
+import { contacto, fotos, textos, type Lang } from '../../data/rancho';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = textos[lang];
+const otraRuta = lang === 'es' ? '/en/antes' : '/antes';
+const [portada, ...galeria] = fotos;
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{t.titulo}</title>
+    <meta name="description" content={t.descripcion} />
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <header class="navbar">
+      <div class="container navbar-inner">
+        <a href="#inicio" class="logo">Rancho Varadero</a>
+        <nav>
+          <a href="#inicio">{t.nav.inicio}</a>
+          <a href="#servicios">{t.nav.servicios}</a>
+          <a href="#galeria">{t.nav.galeria}</a>
+          <a href="#contacto">{t.nav.contacto}</a>
+          <a href={otraRuta} class="idioma">{t.otroIdioma}</a>
+        </nav>
+      </div>
+    </header>
+
+    <section id="inicio" class="hero" style={`background-image: url(${portada.src})`}>
+      <div class="hero-overlay">
+        <h1>{t.bienvenida}</h1>
+        <p>{t.subtitulo}</p>
+        <a class="btn" href={contacto.whatsapp} target="_blank" rel="noopener">{t.reservar}</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>{t.sobreTitulo}</h2>
+        <p>{t.sobre}</p>
+      </div>
+    </section>
+
+    <section id="servicios" class="section gris">
+      <div class="container">
+        <h2>{t.serviciosTitulo}</h2>
+        <ul class="servicios">
+          {t.servicios.map((servicio) => <li>{servicio}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section id="galeria" class="section">
+      <div class="container">
+        <h2>{t.galeriaTitulo}</h2>
+        <div class="galeria">
+          {galeria.map((foto) => <img src={foto.src} alt={t.alt[foto.id]} loading="lazy" />)}
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="section gris">
+      <div class="container">
+        <h2>{t.contactoTitulo}</h2>
+        <p>{t.contactoTexto}</p>
+        <p>
+          {contacto.telefonos.map((tel, i) => (
+            <>
+              {i > 0 && ' · '}
+              <a href={`tel:${tel.replace(/[^+\d]/g, '')}`}>{tel}</a>
+            </>
+          ))}
+        </p>
+        <p>{t.ubicacion}</p>
+        <a class="btn" href={contacto.whatsapp} target="_blank" rel="noopener">{t.reservar}</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>© 2026 Rancho Varadero · Alquileres MM. {t.derechos}</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  :global(body) {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+    background: #fff;
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .navbar {
+    background: #222;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .navbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 60px;
+  }
+  .logo {
+    color: #fff;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: none;
+  }
+  nav a {
+    color: #ddd;
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 15px;
+  }
+  nav a:hover {
+    color: #fff;
+  }
+  .idioma {
+    border: 1px solid #777;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .hero {
+    background-size: cover;
+    background-position: center;
+    height: 520px;
+  }
+  .hero-overlay {
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+  }
+  .hero h1 {
+    font-size: 44px;
+    margin: 0 0 10px;
+  }
+  .hero p {
+    font-size: 20px;
+    margin: 0 0 24px;
+  }
+  .btn {
+    display: inline-block;
+    background: #007bff;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .btn:hover {
+    background: #0069d9;
+  }
+  .section {
+    padding: 60px 0;
+    text-align: center;
+  }
+  .gris {
+    background: #f4f4f4;
+  }
+  h2 {
+    font-size: 32px;
+    margin: 0 0 20px;
+  }
+  .servicios {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .servicios li {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 4px;
+  }
+  .galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+  }
+  .galeria img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+  }
+  .footer {
+    background: #222;
+    color: #aaa;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+  }
+  @media (max-width: 640px) {
+    nav a {
+      margin-left: 12px;
+      font-size: 14px;
+    }
+    .hero h1 {
+      font-size: 32px;
+    }
+  }
+</style>

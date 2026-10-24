@@ -1,0 +1,33 @@
+---
+// Iconos Phosphor (B6), en línea y heredando currentColor.
+import users from '@phosphor-icons/core/assets/regular/users.svg?raw';
+import bed from '@phosphor-icons/core/assets/regular/bed.svg?raw';
+import pool from '@phosphor-icons/core/assets/regular/swimming-pool.svg?raw';
+import cooking from '@phosphor-icons/core/assets/regular/cooking-pot.svg?raw';
+import sun from '@phosphor-icons/core/assets/regular/sun-horizon.svg?raw';
+import car from '@phosphor-icons/core/assets/regular/car.svg?raw';
+import waves from '@phosphor-icons/core/assets/regular/waves.svg?raw';
+import whatsapp from '@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw';
+import phone from '@phosphor-icons/core/assets/regular/phone.svg?raw';
+import mapPin from '@phosphor-icons/core/assets/regular/map-pin.svg?raw';
+import plus from '@phosphor-icons/core/assets/regular/plus.svg?raw';
+import arrowUp from '@phosphor-icons/core/assets/regular/arrow-up.svg?raw';
+import arrowLeft from '@phosphor-icons/core/assets/regular/arrow-left.svg?raw';
+import chat from '@phosphor-icons/core/assets/regular/chat-circle-text.svg?raw';
+import calendar from '@phosphor-icons/core/assets/regular/calendar-check.svg?raw';
+import key from '@phosphor-icons/core/assets/regular/key.svg?raw';
+import globe from '@phosphor-icons/core/assets/regular/globe-simple.svg?raw';
+
+const icons = { users, bed, pool, cooking, sun, car, waves, whatsapp, phone, mapPin, plus, arrowUp, arrowLeft, chat, calendar, key, globe };
+export type IconName = keyof typeof icons;
+
+interface Props {
+  name: IconName;
+  class?: string;
+}
+
+const { name, class: className = 'size-4' } = Astro.props;
+const svg = icons[name].replace('<svg ', `<svg aria-hidden="true" focusable="false" class="${className}" `);
+---
+
+<Fragment set:html={svg} />

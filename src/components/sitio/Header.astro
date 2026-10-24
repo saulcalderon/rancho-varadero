@@ -1,0 +1,220 @@
+---
+// Isla flotante (B7): píldora de cristal separada del borde, centrada. En móvil, hamburguesa que se convierte en X
+// y abre un menú a pantalla completa con los enlaces entrando en cascada.
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const wa = whatsapp(lang);
+const ease = 'transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]';
+---
+
+<a
+  href="#contenido"
+  class:list={[
+    'btn btn-primary btn-sm fixed top-4 left-4 z-[70] -translate-y-24 focus-visible:translate-y-0',
+  ]}
+>
+  {t.saltar}
+</a>
+
+<header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4">
+  <div
+    class:list={[
+      'pointer-events-auto mx-auto mt-6 flex w-max items-center gap-2 rounded-full bg-arena/75 p-1 pl-3 shadow-sm ring-1 ring-tinta/10 backdrop-blur-xl lg:gap-4',
+    ]}
+  >
+    <a href="#inicio" class="flex h-9 items-center gap-2 rounded-full pr-2 text-tinta" aria-label={t.volverInicio}>
+      <Logo class="size-6" />
+      <span class="text-sm font-bold whitespace-nowrap">{t.marca}</span>
+    </a>
+
+    <nav aria-label={t.navLabel} class="hidden lg:block">
+      <ul class="flex items-center text-sm font-medium">
+        {
+          t.nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'flex h-9 items-center rounded-full px-3 text-tinta-suave hover:bg-tinta/5 hover:text-tinta',
+                  ease,
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-1">
+      <div class="hidden items-center text-xs font-bold sm:flex" role="group" aria-label={t.idioma.label}>
+        <span aria-current="page" class="flex h-9 items-center rounded-full px-2 text-tinta">
+          {t.idioma.actual}
+        </span>
+        <a
+          href={t.idioma.otroHref}
+          hreflang={t.idioma.otroLang}
+          lang={t.idioma.otroLang}
+          aria-label={t.idioma.otroNombre}
+          class:list={['flex h-9 items-center rounded-full px-2 text-tinta-suave hover:bg-tinta/5 hover:text-tinta', ease]}
+        >
+          {t.idioma.otro}
+        </a>
+      </div>
+      <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+        <Icon name="whatsapp" class="size-4" />
+        {t.reservarCorto}
+      </a>
+      <button
+        type="button"
+        class:list={['menu-toggle relative size-9 rounded-full text-tinta hover:bg-tinta/5 lg:hidden', ease]}
+        aria-expanded="false"
+        aria-controls="menu"
+        aria-label={t.menuAbrir}
+        data-open-label={t.menuAbrir}
+        data-close-label={t.menuCerrar}
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div
+  id="menu"
+  class:list={[
+    'menu invisible fixed inset-0 z-40 flex flex-col justify-between bg-arena/90 px-4 pt-24 pb-12 opacity-0 backdrop-blur-3xl lg:hidden',
+    ease,
+  ]}
+  inert
+>
+  <nav aria-label={t.navLabel}>
+    <ul class="flex flex-col items-center gap-6 pt-12 text-center">
+      {
+        t.nav.map((item, i) => (
+          <li class="menu-item" style={`--i:${i}`}>
+            <a href={item.href} data-menu-link class="text-3xl font-semibold text-tinta">
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+      <li class="menu-item" style={`--i:${t.nav.length}`}>
+        <a href={t.idioma.otroHref} hreflang={t.idioma.otroLang} lang={t.idioma.otroLang} class="link text-base font-medium">
+          {t.idioma.otroNombre}
+        </a>
+      </li>
+      <li class="menu-item pt-6" style={`--i:${t.nav.length + 1}`}>
+        <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+          <Icon name="whatsapp" class="size-5" />
+          {t.reservar}
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="menu-item flex flex-col items-center gap-2 text-sm text-tinta-suave" style={`--i:${t.nav.length + 2}`}>
+    <p class="flex flex-wrap justify-center gap-x-3 gap-y-1">
+      {
+        telefonos.map((tel) => (
+          <a href={tel.href} class="link inline-flex items-center gap-1">
+            <Icon name="phone" />
+            {tel.numero}
+          </a>
+        ))
+      }
+    </p>
+  </div>
+</div>
+
+<style>
+  .menu-toggle span {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    width: 16px;
+    height: 2px;
+    margin-top: -1px;
+    border-radius: 9999px;
+    background-color: currentColor;
+    transition: transform 700ms var(--ease-fluid);
+  }
+
+  .menu-toggle span:nth-child(1) {
+    transform: translateY(-4px);
+  }
+
+  .menu-toggle span:nth-child(2) {
+    transform: translateY(4px);
+  }
+
+  .menu-toggle[aria-expanded='true'] span:nth-child(1) {
+    transform: translateY(0) rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded='true'] span:nth-child(2) {
+    transform: translateY(0) rotate(-45deg);
+  }
+
+  .menu[data-open] {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .menu-item {
+    opacity: 0;
+    transform: translateY(3rem);
+    transition:
+      opacity 700ms var(--ease-fluid),
+      transform 700ms var(--ease-fluid);
+  }
+
+  .menu[data-open] .menu-item {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(100ms + var(--i, 0) * 50ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu-item {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const menu = document.getElementById('menu');
+  const main = document.getElementById('contenido');
+  const footer = document.querySelector('footer');
+
+  const setOpen = (open: boolean) => {
+    if (!toggle || !menu) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', (open ? toggle.dataset.closeLabel : toggle.dataset.openLabel) ?? '');
+    menu.toggleAttribute('data-open', open);
+    menu.inert = !open;
+    if (main) main.inert = open;
+    if (footer) footer.inert = open;
+    if (open) menu.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
+  };
+
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+</script>

@@ -1,0 +1,41 @@
+---
+// Portada dinámica (es y en comparten todo; solo cambia el idioma).
+import Layout from '../../layouts/Layout.astro';
+import Header from './Header.astro';
+import ScrollWorld from './ScrollWorld.astro';
+import Tagline from './Tagline.astro';
+import Servicios from './Servicios.astro';
+import Galeria from './Galeria.astro';
+import Pasos from './Pasos.astro';
+import Faq from './Faq.astro';
+import FinalCta from './FinalCta.astro';
+import Footer from './Footer.astro';
+import { sitio, type Lang } from '../../data/sitio';
+import { structuredData } from '../../data/schema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const jsonLd = JSON.stringify(structuredData(lang, Astro.site)).replaceAll('<', '\\u003c');
+---
+
+<Layout lang={lang} title={t.seo.title} description={t.seo.description} alternates>
+  <script slot="head" type="application/ld+json" set:html={jsonLd} />
+  <Header lang={lang} />
+  <main id="contenido" tabindex="-1" class="outline-none">
+    <ScrollWorld lang={lang} />
+    <Tagline lang={lang} />
+    <Servicios lang={lang} />
+    <Galeria lang={lang} />
+    <Pasos lang={lang} />
+    <Faq lang={lang} />
+    <FinalCta lang={lang} />
+  </main>
+  <Footer lang={lang} />
+  <script>
+    import '../../scripts/sitio';
+  </script>
+</Layout>

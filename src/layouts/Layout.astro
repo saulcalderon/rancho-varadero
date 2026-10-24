@@ -1,0 +1,86 @@
+---
+import { Font, getImage } from 'astro:assets';
+import '../styles/global.css';
+import poster from '../assets/paseo/paseo-1.webp';
+import { rutas, sitio, type Lang } from '../data/sitio';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  noindex?: boolean;
+  /** Página con versión en ambos idiomas (portada): emite canonical y hreflang. */
+  alternates?: boolean;
+}
+
+const { lang, title, description, noindex = false, alternates = false } = Astro.props;
+const t = sitio[lang];
+const site = Astro.site;
+
+// Imagen para redes: el primer fotograma del paseo (la piscina frente a la casa), 1200×630.
+const og = await getImage({ src: poster, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 82 });
+const abs = (path: string) => (site ? new URL(path, site).href : undefined);
+const canonical = abs(Astro.url.pathname);
+const ogImage = abs(og.src);
+const robots = noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large';
+---
+
+<!doctype html>
+<html lang={t.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#f7f2ea" />
+
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" href="/icon.ico" sizes="32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    {site && !noindex && <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />}
+    {canonical && !noindex && <link rel="canonical" href={canonical} />}
+    {
+      site && alternates && !noindex && (
+        <>
+          <link rel="alternate" hreflang="es" href={abs(rutas.es)} />
+          <link rel="alternate" hreflang="en" href={abs(rutas.en)} />
+          <link rel="alternate" hreflang="x-default" href={abs(rutas.es)} />
+        </>
+      )
+    }
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rancho Varadero" />
+    <meta property="og:locale" content={t.ogLocale} />
+    <meta property="og:locale:alternate" content={lang === 'es' ? sitio.en.ogLocale : sitio.es.ogLocale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {/* og:image necesita URL absoluta: solo se emite cuando `site` está definido (ver astro.config.mjs). */}
+    {
+      ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:type" content="image/jpeg" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={t.seo.ogAlt} />
+          <meta name="twitter:image" content={ogImage} />
+          <meta name="twitter:image:alt" content={t.seo.ogAlt} />
+        </>
+      )
+    }
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <Font cssVariable="--font-manrope" preload />
+    <slot name="head" />
+  </head>
+  <body class="min-h-svh">
+    <slot />
+  </body>
+</html>

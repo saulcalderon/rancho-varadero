@@ -1,0 +1,42 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+import { sitio, whatsapp, type Lang } from '../../data/sitio';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = sitio[lang];
+const p = t.pasos;
+const iconos: IconName[] = ['chat', 'calendar', 'key'];
+---
+
+<section id="como-reservar" aria-labelledby="pasos-titulo" class="scroll-mt-24 bg-arena-2 px-4 py-24 md:px-12 xl:px-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="max-w-[680px]" data-reveal>
+      <p class="eyebrow">{p.eyebrow}</p>
+      <h2 id="pasos-titulo" class="mt-4 text-3xl text-tinta lg:text-5xl">{p.titulo}</h2>
+    </div>
+    <ol class="mt-12 grid gap-4 md:grid-cols-3">
+      {
+        p.items.map((paso, i) => (
+          <li class="flex flex-col rounded-2xl bg-arena p-6 ring-1 ring-tinta/10" data-reveal style={`--d:${i * 100}ms`}>
+            <div class="flex items-center justify-between">
+              <span class="text-5xl font-semibold text-piscina tabular-nums">{i + 1}</span>
+              <Icon name={iconos[i]} class="size-6 text-tinta-suave" />
+            </div>
+            <h3 class="mt-6 text-xl text-tinta">{paso.titulo}</h3>
+            <p class="mt-2 text-base text-tinta-suave">{paso.texto}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="mt-12" data-reveal>
+      <a href={whatsapp(lang)} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+        <Icon name="whatsapp" class="size-5" />
+        {t.reservar}
+      </a>
+    </div>
+  </div>
+</section>
