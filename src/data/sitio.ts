@@ -25,8 +25,8 @@ export const whatsapp = (lang: Lang) => `${contacto.whatsapp}?text=${encodeURICo
 
 export const telefonos = contacto.telefonos.map((numero) => ({ numero, href: tel(numero) }));
 
-// Las 7 paradas del paseo, en orden. El póster de cada parada es un fotograma real del vídeo (regla de costura):
-// paseo-k.webp = primer fotograma del clip k = parada k-1; paseo-7.webp = último fotograma del clip 6 = parada 6.
+// Las 7 tomas estáticas del paseo, en orden. El póster de cada toma estática es un fotograma real del vídeo (regla de costura):
+// paseo-k.webp = primer fotograma del clip k = toma estática k-1; paseo-7.webp = último fotograma del clip 6 = toma estática 6.
 // `focus` es la posición horizontal (0–100 %) del recorte cuando la pantalla es más estrecha que el 16:9 (móvil),
 // elegida mirando cada fotograma para que el sujeto quede a la vista.
 export const paradas = [
@@ -39,7 +39,7 @@ export const paradas = [
   { id: 'reserva', poster: poster7, clip: null, focus: 68 }, // vista aérea: piscina entre palmeras (el kiosko queda bajo el texto en móvil)
 ] as const;
 
-// Cuánta pantalla de scroll ocupa cada parada (en alturas de pantalla). Más en la primera y la última.
+// Cuánta pantalla de scroll ocupa cada toma estática (en alturas de pantalla). Más en la primera y la última.
 export const ritmo = { parada: 0.9, primera: 1.3, ultima: 1.6, tramo: 1.4, crossfade: 0.07 };
 
 type Parada = {
@@ -83,11 +83,11 @@ export const sitio = {
 
     paseo: {
       label: 'Recorrido por Rancho Varadero',
-      railLabel: 'Paradas del recorrido',
+      railLabel: 'Tomas estáticas del recorrido',
       pista: 'Desliza para recorrer el rancho',
       cargando: 'Cargando el recorrido',
       cargandoVideo: 'Cargando video…',
-      // Parada 0: el hero. Su titular es el único h1 de la página.
+      // Toma estática 0: el hero. Su titular es el único h1 de la página.
       hero: {
         lugar: 'Inicio',
         marca: 'Rancho Varadero · Playa El Amatal',

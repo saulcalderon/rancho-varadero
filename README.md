@@ -13,7 +13,7 @@ Guía paso a paso: [GUIA.md](GUIA.md), cómo construir un sitio así con Codex y
 
 ## Cómo funciona el recorrido
 
-El scroll no reproduce un video: mueve su `currentTime`. Siete fotos del rancho son las paradas, y seis clips generados con IA conectan cada parada con la siguiente. Cada clip empieza en el fotograma exacto donde termina el anterior, así que el recorrido se ve como una sola toma, hacia adelante o hacia atrás.
+El scroll no reproduce un video: mueve su `currentTime`. Siete fotos del rancho son las tomas estáticas, y seis clips generados con IA conectan cada toma estática con la siguiente. Cada clip empieza en el fotograma exacto donde termina el anterior, así que el recorrido se ve como una sola toma, hacia adelante o hacia atrás.
 
 1. **Fotos:** 8 fotos originales; quedaron 7, en el orden del recorrido (`media/originals/`).
 2. **Keyframes:** recorte o outpaint a 16:9, upscale y retoque de luz con GPT Image 2.5, con el mismo prompt para todas (`media/keyframes/07-final/`).

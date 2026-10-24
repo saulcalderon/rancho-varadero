@@ -1,6 +1,6 @@
 #!/bin/bash
 # Genera los clips del recorrido con MiniMax H3 (2K, 8 s, 16:9).
-# clip-k va de la parada k-1 a la parada k: primer frame = keyframe k-1, último frame = keyframe k.
+# clip-k va de la toma estática k-1 a la toma estática k: primer frame = keyframe k-1, último frame = keyframe k.
 # MiniMax H3 no tiene opción para desactivar el audio: el original se guarda en raw/ y
 # el master sin audio (video copiado sin recodificar) en master/.
 # Uso: bash run.sh 1 2 3 4 5   (o solo los clips que haya que repetir)

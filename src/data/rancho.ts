@@ -8,7 +8,7 @@ export const contacto = {
   whatsapp: 'https://wa.me/50376956521',
 };
 
-// En el orden del recorrido: cada foto es una parada del paseo.
+// En el orden del recorrido: cada foto es una toma estática del paseo.
 export const fotos = [
   { src: '/photos/0-piscina-casa.webp', id: 'piscinaCasa' },
   { src: '/photos/1-kiosko-hamacas.webp', id: 'casa' },

@@ -1,7 +1,7 @@
 ---
-// Paseo por el rancho: 7 paradas (fotogramas fijos) unidas por 6 tramos de vídeo que avanzan y retroceden con el scroll.
+// Paseo por el rancho: 7 tomas estáticas (fotogramas fijos) unidas por 6 tramos de vídeo que avanzan y retroceden con el scroll.
 // El motor (src/scripts/scroll-world.js) adopta este marcado: así el h1, el copy y el primer póster están en el HTML.
-// Paradas = `sections` SIN clip; tramos = `connectors` (paseo-k va de la parada k-1 a la parada k).
+// Tomas estáticas = `sections` SIN clip; tramos = `connectors` (paseo-k va de la toma estática k-1 a la toma estática k).
 import Icon from './Icon.astro';
 import { paradas, ritmo, sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
 
@@ -16,7 +16,7 @@ const wa = whatsapp(lang);
 const total = paradas.length;
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// Icono de cada parada en el riel (opción «iconos»).
+// Icono de cada toma estática en el riel (opción «iconos»).
 const iconos = ['house', 'palm', 'couch', 'group', 'pool', 'waves', 'calendar'] as const;
 
 const lugares = [p.hero.lugar, ...p.paradas.map((x) => x.lugar), p.final.lugar];
@@ -40,8 +40,8 @@ const config = {
   connectorsMobile: paradas.slice(0, -1).map((parada) => (parada.clip ?? '').replace('.mp4', '-m.mp4')),
 };
 
-// Escenas en el mismo orden que la cadena del motor: parada 0, tramo 1, parada 1, tramo 2 … parada 6.
-// El póster de un tramo es el de la parada de la que sale (= primer fotograma de su clip).
+// Escenas en el mismo orden que la cadena del motor: toma estática 0, tramo 1, toma estática 1, tramo 2 … toma estática 6.
+// El póster de un tramo es el de la toma estática de la que sale (= primer fotograma de su clip).
 const escenas = paradas.flatMap((parada, i) =>
   i < total - 1
     ? [
@@ -213,7 +213,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     </div>
   </div>
 
-  <!-- Distancia de scroll del paseo. Los anclajes (#inicio, #descanso…) los coloca el motor en la mitad de cada parada. -->
+  <!-- Distancia de scroll del paseo. Los anclajes (#inicio, #descanso…) los coloca el motor en la mitad de cada toma estática. -->
   <div class="sw-track">
     {paradas.map((parada) => <span class="sw-anchor" id={parada.id} data-sw-anchor={parada.id} />)}
   </div>
@@ -230,7 +230,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     --sw-font-body: var(--font-sans);
   }
 
-  /* El hero puede ser algo más ancho que el resto de paradas para que el titular respire. */
+  /* El hero puede ser algo más ancho que el resto de tomas estáticas para que el titular respire. */
   @media (min-width: 861px) {
     .sw-copy {
       left: 48px;
@@ -246,7 +246,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     }
   }
 
-  /* Riel con iconos: círculos de 28 px con el icono de cada parada en vez de puntos. */
+  /* Riel con iconos: círculos de 28 px con el icono de cada toma estática en vez de puntos. */
   .sw-route {
     gap: 16px;
   }
@@ -437,7 +437,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     }
   }
 
-  /* Sin JS: el paseo no puede montarse; se ve la primera parada con su texto y el resto de la página debajo. */
+  /* Sin JS: el paseo no puede montarse; se ve la primera toma estática con su texto y el resto de la página debajo. */
   html:not(.js) .sw-viewport {
     position: relative;
   }
@@ -502,7 +502,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       panel.textContent = [
         `${innerWidth}×${innerHeight} dpr=${devicePixelRatio} táctil=${mq('(hover: none) and (pointer: coarse)')} ` +
           `menos-mov=${mq('(prefers-reduced-motion: reduce)')} toque=${root.dataset.primed ? 'sí' : 'no'}`,
-        `scrollY=${Math.round(scrollY)} parada=${root.dataset.stop ?? '-'} paso=${window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 'libre (táctil)' : (document.documentElement.dataset.paso ?? 'libre')}`,
+        `scrollY=${Math.round(scrollY)} toma=${root.dataset.stop ?? '-'} paso=${window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 'libre (táctil)' : (document.documentElement.dataset.paso ?? 'libre')}`,
         ...tramos,
       ].join('\n');
     };
@@ -511,33 +511,36 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
   }
 
   /*
-   * Recorrido guiado (opción data-paso="guiado" en <html>, solo con rueda, trackpad o teclado): dentro del paseo,
-   * un gesto de scroll, una flecha, espacio o un clic en el riel lleva la cámara a la parada siguiente (o anterior)
-   * a ritmo constante, y ahí se detiene. Fuera del paseo, y al pasar la última parada, el scroll vuelve a ser normal.
+   * Modos de scroll en escritorio (data-paso en <html>; en pantallas táctiles siempre es el scroll nativo):
+   * - "paradas": scroll libre y suavizado, pero un mismo gesto nunca pasa de la siguiente toma estática.
+   *   Un scroll corto avanza parte del tramo; uno largo (o con inercia) se detiene justo en la toma estática.
+   * - "guiado": cada gesto lleva la cámara a la toma estática siguiente a ritmo constante (6 s por tramo).
+   * - sin atributo (predeterminado): scroll libre del navegador.
+   * En ambos modos, flechas, espacio y un clic en el riel viajan a la toma estática a ritmo de vídeo. Fuera del paseo, y al
+   * pasar la última toma estática, el scroll vuelve a ser normal.
    */
   function guiado(root: HTMLElement) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const anchors = [...root.querySelectorAll<HTMLElement>('.sw-anchor')];
-    // Ritmo: cada tramo de vídeo dura lo mismo sin importar cuánto scroll ocupe (cerca de sus 8 s reales), para
-    // apreciarlo. Saltar varias paradas desde el riel suma un poco por parada extra.
+    // Ritmo de los viajes con teclado o riel: cada tramo dura lo mismo sin importar cuánto scroll ocupe (cerca de
+    // sus 8 s reales). Saltar varias tomas estáticas desde el riel suma un poco por toma estática extra.
     const MS_TRAMO = 6000;
     const MS_TRAMO_EXTRA = 2500;
+    const SUAVIZADO = 0.14; // fracción de la distancia que recorre el scroll suavizado en cada cuadro
     let animando = false;
     let ultimaRueda = 0;
 
-    // En pantallas táctiles el dedo mueve el vídeo con el scroll nativo (con su inercia): el modo guiado es solo
-    // para rueda, trackpad y teclado.
     const tactil = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const activo = () => !tactil && document.documentElement.dataset.paso === 'guiado';
+    const modo = () => (tactil ? undefined : document.documentElement.dataset.paso);
+    const activo = () => modo() === 'guiado' || modo() === 'paradas';
     const sw = () => (root as HTMLElement & { __sw?: { top0: number; vh: number } }).__sw;
     const paradasY = () => {
       const s = sw();
       return s ? anchors.map((a) => s.top0 + parseFloat(a.style.top || '0')) : [];
     };
-    // Parada destino en esa dirección, o null si ya no hay (el scroll sigue normal).
-    const destino = (dir: number) => {
+    // Toma estática siguiente en esa dirección desde y, o null si ya no hay o y está fuera del paseo (scroll normal).
+    const siguiente = (dir: number, y = window.scrollY) => {
       const ys = paradasY();
-      const y = window.scrollY;
       if (!ys.length || y > ys[ys.length - 1] + 4 || y < ys[0] - 4) return null;
       if (dir > 0) return ys.find((p) => p > y + 4) ?? null;
       return [...ys].reverse().find((p) => p < y - 4) ?? null;
@@ -546,6 +549,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     const ease = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
     function ir(y: number) {
+      objetivo = null;
       const desde = window.scrollY;
       const ys = paradasY();
       const cerca = (v: number) => ys.reduce((m, p, i) => (Math.abs(p - v) < Math.abs(ys[m] - v) ? i : m), 0);
@@ -562,11 +566,65 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       requestAnimationFrame(paso);
     }
 
-    // Devuelve true si el gesto se consumió (el llamador cancela el scroll nativo).
+    // ---- "paradas": scroll suavizado con tope en la siguiente toma estática ----
+    let objetivo: number | null = null; // posición hacia la que se desliza el scroll suavizado
+    let limite: number | null = null; // tope del gesto actual
+    let dirGesto = 0;
+    let deslizando = false;
+    let puesto = 0; // última posición que fijó el deslizamiento (para notar si algo más movió la página)
+    const fijar = (y: number) => {
+      window.scrollTo({ top: y, behavior: 'instant' });
+      puesto = window.scrollY;
+    };
+    function deslizar() {
+      if (objetivo == null) {
+        deslizando = false;
+        return;
+      }
+      // Si algo más movió la página (barra de scroll, un enlace), se abandona el deslizamiento.
+      if (Math.abs(window.scrollY - puesto) > 2) {
+        objetivo = null;
+        deslizando = false;
+        return;
+      }
+      const d = objetivo - window.scrollY;
+      if (Math.abs(d) <= 1 || reduce) {
+        fijar(objetivo);
+        objetivo = null;
+        deslizando = false;
+        return;
+      }
+      // Al menos 1 px por cuadro: el navegador redondea el scroll y un paso menor dejaría el final a medias.
+      fijar(window.scrollY + Math.sign(d) * Math.max(1, Math.abs(d) * SUAVIZADO));
+      requestAnimationFrame(deslizar);
+    }
+    function ruedaConParadas(e: WheelEvent, nuevo: boolean) {
+      const dir = Math.sign(e.deltaY);
+      if (objetivo != null && Math.abs(window.scrollY - puesto) > 2) objetivo = null; // la página se movió por otra vía
+      const desde = objetivo ?? window.scrollY;
+      // Un gesto nuevo (o un cambio de dirección) fija su tope: la siguiente toma estática desde donde está la cámara.
+      if (nuevo || dir !== dirGesto) {
+        dirGesto = dir;
+        limite = siguiente(dir, desde);
+      }
+      if (limite == null) {
+        objetivo = null;
+        return; // antes de la primera o después de la última toma estática: scroll normal
+      }
+      e.preventDefault();
+      const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+      objetivo = dir > 0 ? Math.min(desde + px, limite) : Math.max(desde + px, limite);
+      if (!deslizando) {
+        deslizando = true;
+        puesto = window.scrollY;
+        requestAnimationFrame(deslizar);
+      }
+    }
+
+    // ---- "guiado": un gesto = un tramo completo ----
     function gesto(dir: number) {
-      if (!activo()) return false;
       if (animando) return true;
-      const y = destino(dir);
+      const y = siguiente(dir);
       if (y == null) return false;
       ir(y);
       return true;
@@ -575,19 +633,24 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     window.addEventListener(
       'wheel',
       (e) => {
-        // Un gesto nuevo empieza tras 200 ms sin eventos de rueda. La inercia del trackpad manda eventos seguidos
-        // durante un buen rato: esos solo se consumen, para que no salten otra parada al terminar la animación.
+        // Un gesto nuevo empieza tras 200 ms sin eventos de rueda; la inercia del trackpad los manda seguidos.
         const ahora = performance.now();
         const nuevo = ahora - ultimaRueda > 200;
         ultimaRueda = ahora;
-        if (!activo() || Math.abs(e.deltaY) < 2) return;
+        if (!activo() || Math.abs(e.deltaY) < 1) return;
+        if (animando) {
+          e.preventDefault();
+          return;
+        }
+        if (modo() === 'paradas') return ruedaConParadas(e, nuevo);
         const dir = Math.sign(e.deltaY);
-        if (nuevo ? gesto(dir) : animando || destino(dir) != null) e.preventDefault();
+        if (nuevo ? gesto(dir) : siguiente(dir) != null) e.preventDefault();
       },
       { passive: false },
     );
 
     window.addEventListener('keydown', (e) => {
+      if (!activo()) return;
       const target = e.target as HTMLElement;
       if (e.altKey || e.ctrlKey || e.metaKey || target.closest('input, textarea, select, [contenteditable]')) return;
       const abajo = ['ArrowDown', 'PageDown'].includes(e.key) || (e.key === ' ' && !e.shiftKey);
@@ -595,7 +658,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       if ((abajo || arriba) && gesto(abajo ? 1 : -1)) e.preventDefault();
     });
 
-    // Clic en el riel: viaja hasta esa parada al mismo ritmo (más largo si está lejos).
+    // Clic en el riel: viaja hasta esa toma estática al ritmo de vídeo (más largo si está lejos).
     root.querySelectorAll<HTMLAnchorElement>('.sw-route__dot').forEach((dot, i) => {
       dot.addEventListener('click', (e) => {
         if (!activo() || animando) return;
@@ -606,4 +669,5 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       });
     });
   }
+
 </script>

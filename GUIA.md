@@ -15,10 +15,10 @@ Todos los números de esta guía son reales: salen de lo que costó y de lo que 
 
 **Qué es un "scroll world":** la página no reproduce un video. La posición del scroll mueve el `currentTime` del video, la misma técnica que usa Apple en sus páginas de producto. Si bajas, la cámara avanza; si subes, retrocede.
 
-- **Las paradas** son fotos del lugar. En cada una, la cámara se detiene y aparece un bloque de texto.
-- **Los clips** conectan cada parada con la siguiente. Cada clip empieza en una foto y termina en la siguiente, así que todo el recorrido se ve como una sola toma.
+- **Las tomas estáticas** son fotos del lugar. En cada una, la cámara se detiene y aparece un bloque de texto.
+- **Los clips** conectan cada toma estática con la siguiente. Cada clip empieza en una foto y termina en la siguiente, así que todo el recorrido se ve como una sola toma.
 
-En Rancho Varadero: 7 fotos (paradas) y 6 clips de 8 s generados con IA.
+En Rancho Varadero: 7 fotos (tomas estáticas) y 6 clips de 8 s generados con IA.
 
 ---
 
@@ -252,10 +252,10 @@ Qué hace cada parte y por qué importa:
 - **`-an`**: sin audio, otra vez, por si acaso.
 - **1920 de ancho, CRF 30**: los 6 clips pesan 45 MB (de 6 a 9 MB cada uno). Con CRF 26 eran 72 MB. En el clip 6, la similitud (SSIM) fue 0,94 / 0,93 / 0,91 con CRF 28 / 30 / 32.
 
-**Los pósters.** Cada parada muestra una imagen fija debajo del video. Esa imagen tiene que ser un fotograma real del video, no la foto original, para que coincida píxel a píxel:
+**Los pósters.** Cada toma estática muestra una imagen fija debajo del video. Esa imagen tiene que ser un fotograma real del video, no la foto original, para que coincida píxel a píxel:
 
-- `paseo-k` = primer fotograma del clip k (paradas 1 a 6).
-- `paseo-7` = último fotograma del clip 6 (la última parada).
+- `paseo-k` = primer fotograma del clip k (tomas estáticas 1 a 6).
+- `paseo-7` = último fotograma del clip 6 (la última toma estática).
 
 ```sh
 # primer fotograma
@@ -287,17 +287,17 @@ Intake:
 - Tono: cálido, claro, de vacaciones en familia.
 - Fotos: los keyframes de media/keyframes/07-final, en el orden del recorrido.
 - Prioridad móvil: sí.
-- Layout: scroll world a pantalla completa, un bloque de texto por parada del recorrido.
+- Layout: scroll world a pantalla completa, un bloque de texto por toma estática del recorrido.
 
 Stack: Astro + Tailwind CSS 4, con pnpm.
 
-Antes de escribir código, devuélveme lo que pide tu Output format, más qué texto va en cada una de las 7 paradas.
+Antes de escribir código, devuélveme lo que pide tu Output format, más qué texto va en cada una de las 7 tomas estáticas.
 ```
 
 **9.2 Construye la v1.** Cuando el plan te convenza:
 
 ```text
-Aprobado. Construye el sitio sección por sección en Astro + Tailwind, en español en / y en inglés en /en/. Deja el diseño listo para un video de fondo tipo scroll world (no lo generes ahora): las 7 paradas con su texto, y debajo servicios, galería, cómo reservar, preguntas frecuentes y un CTA final por WhatsApp. Solo hechos de la lista. Al terminar, corre pnpm build.
+Aprobado. Construye el sitio sección por sección en Astro + Tailwind, en español en / y en inglés en /en/. Deja el diseño listo para un video de fondo tipo scroll world (no lo generes ahora): las 7 tomas estáticas con su texto, y debajo servicios, galería, cómo reservar, preguntas frecuentes y un CTA final por WhatsApp. Solo hechos de la lista. Al terminar, corre pnpm build.
 ```
 
 **9.3 Conecta scroll-world a los clips que YA existen.** Esta es la frase clave: **"no generes nada ni gastes créditos"**. Sin ella, la skill arranca su propio pipeline de video.
@@ -308,13 +308,13 @@ Usa $scroll-world en este proyecto Astro, PERO los videos ya están generados. N
 Videos: public/video/paseo-1.mp4 … paseo-6.mp4 (1920×1080, GOP 6, sin audio, ya codificados: no los recodifiques). Pósters: src/assets/paseo/paseo-1…7.webp (fotogramas reales del video).
 
 Cableado:
-- sections: las 7 paradas, SIN clip. Su still es el póster de esa parada.
-- connectors: los 6 clips en orden (paseo-k va de la parada k-1 a la parada k).
-- crossfade 0.07, connScroll 1.4, paradas 0.9; más scroll en la primera (1.3) y la última (1.6).
-- El texto de cada parada se ve con la cámara quieta en esa parada, no a mitad del tramo.
-- Móvil: el 16:9 se recorta. Mira cada fotograma y define un `focus` horizontal (0–100) por parada para que el sujeto quede a la vista.
+- sections: las 7 tomas estáticas, SIN clip. Su still es el póster de esa toma estática.
+- connectors: los 6 clips en orden (paseo-k va de la toma estática k-1 a la toma estática k).
+- crossfade 0.07, connScroll 1.4, tomas estáticas 0.9; más scroll en la primera (1.3) y la última (1.6).
+- El texto de cada toma estática se ve con la cámara quieta en esa toma estática, no a mitad del tramo.
+- Móvil: el 16:9 se recorta. Mira cada fotograma y define un `focus` horizontal (0–100) por toma estática para que el sujeto quede a la vista.
 - prefers-reduced-motion y save-data: solo pósters, sin video.
-- Opción de scroll guiado: un gesto, una flecha o un clic en el riel de paradas reproduce el clip hasta la siguiente parada; después de la última parada, el scroll vuelve a ser normal.
+- Opción de scroll guiado: un gesto, una flecha o un clic en el riel de tomas estáticas reproduce el clip hasta la siguiente toma estática; después de la última toma estática, el scroll vuelve a ser normal.
 - Un solo h1 en la página; el copy y el primer póster en el HTML del servidor.
 
 Al terminar, haz el QA del Step 8 y corre pnpm build.
@@ -326,10 +326,10 @@ Al terminar, haz el QA del Step 8 y corre pnpm build.
 - Carga primero los clips más cercanos a tu posición, máximo 2 a la vez.
 - Mantiene el póster hasta que el clip pinta su primer fotograma, así no se ve la carga.
 - En iOS "prepara" el video (`playsinline`, `muted`) para que los saltos sí se pinten.
-- Hace un fundido corto en cada costura y recorta en móvil según el `focus` de cada parada.
+- Hace un fundido corto en cada costura y recorta en móvil según el `focus` de cada toma estática.
 - Con reduced-motion o ahorro de datos, solo muestra pósters.
 
-Los datos de cada parada (póster, clip, `focus`) viven en `src/data/sitio.ts`, y el componente que monta el motor es `src/components/sitio/ScrollWorld.astro`.
+Los datos de cada toma estática (póster, clip, `focus`) viven en `src/data/sitio.ts`, y el componente que monta el motor es `src/components/sitio/ScrollWorld.astro`.
 
 ---
 
@@ -337,9 +337,9 @@ Los datos de cada parada (póster, clip, `focus`) viven en `src/data/sitio.ts`, 
 
 **Checklist de QA** (pídele a Codex que lo haga con un navegador headless como Playwright y te deje capturas):
 
-- [ ] **Costuras:** captura justo antes y justo después de cada una (parada → clip y clip → parada). La composición debe coincidir.
+- [ ] **Costuras:** captura justo antes y justo después de cada una (toma estática → clip y clip → toma estática). La composición debe coincidir.
 - [ ] **Seekable:** `video.seekable.end(0) > 0` en todos los clips, y `currentTime` sigue al scroll, también hacia atrás.
-- [ ] **Móvil 390×844:** el sujeto de cada parada se ve; el texto no tapa lo importante.
+- [ ] **Móvil 390×844:** el sujeto de cada toma estática se ve; el texto no tapa lo importante.
 - [ ] **Reduced motion:** cero peticiones de video, solo pósters.
 - [ ] **Consola:** sin errores.
 - [ ] **Build:** `pnpm build` sin errores.
@@ -376,7 +376,7 @@ Saldo inicial: 1.010 créditos (plan Plus). Saldo final: 536,25.
 2. **Prueba antes de renderizar todo.** Un clip en 4 modelos costó 70 créditos y evitó elegir mal para los 6.
 3. **El audio viene aunque no lo pidas.** MiniMax H3 siempre lo agrega: quítalo con `ffmpeg -c:v copy -an` apenas descargues.
 4. **Las fotos pálidas dan videos pálidos.** El retoque con un solo prompt para todas fue lo que más mejoró el resultado.
-5. **El móvil recorta el 16:9.** Elige un `focus` por parada mirando cada fotograma. Aun así, en la última parada el kiosko de playa queda debajo del texto en el teléfono. La solución completa sería una cadena de clips vertical 9:16, a cerca del doble de costo.
+5. **El móvil recorta el 16:9.** Elige un `focus` por toma estática mirando cada fotograma. Aun así, en la última toma estática el kiosko de playa queda debajo del texto en el teléfono. La solución completa sería una cadena de clips vertical 9:16, a cerca del doble de costo.
 6. **Desde la web de Higgsfield un clic cuesta caro.** Lanza todo desde Codex, donde el costo ya está aprobado.
 
 ---
