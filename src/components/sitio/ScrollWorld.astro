@@ -16,6 +16,9 @@ const wa = whatsapp(lang);
 const total = paradas.length;
 const pad = (n: number) => String(n).padStart(2, '0');
 
+// Icono de cada parada en el riel (opción «iconos»).
+const iconos = ['house', 'palm', 'couch', 'group', 'pool', 'waves', 'calendar'] as const;
+
 const lugares = [p.hero.lugar, ...p.paradas.map((x) => x.lugar), p.final.lugar];
 
 const config = {
@@ -45,9 +48,6 @@ const escenas = paradas.flatMap((parada, i) =>
       ]
     : [{ kind: 'dive', poster: parada.poster, i }],
 );
-
-// Posición de la tarjeta de cada parada (escritorio): justify/align del contenedor de la parada.
-const pos = (i: number) => ({ 'data-x': paradas[i].texto[0], 'data-y': paradas[i].texto[1] });
 
 const pill = 'rounded-full bg-arena/80 px-3 py-1 text-sm font-medium text-tinta ring-1 ring-tinta/10 backdrop-blur-md';
 const meta = 'flex items-center gap-2 text-xs font-semibold tracking-widest text-tinta-suave uppercase';
@@ -90,7 +90,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
 
     <div class="sw-copylayer">
       <!-- 0 · Hero: el único h1 de la página. -->
-      <article class="sw-copy sw-copy--hero" {...pos(0)}>
+      <article class="sw-copy sw-copy--hero">
         <div class="sw-card">
         <h1>
           <span class="eyebrow block">{p.hero.marca}</span>{' '}
@@ -120,7 +120,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
 
       {
         p.paradas.map((parada, k) => (
-          <article class="sw-copy" {...pos(k + 1)}>
+          <article class="sw-copy">
             <div class="sw-card">
             <p class={meta}>
               <span class="tabular-nums">
@@ -144,7 +144,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       }
 
       <!-- 6 · Final: capacidad, parqueo, ubicación y CTA. -->
-      <article class="sw-copy" {...pos(total - 1)}>
+      <article class="sw-copy">
         <div class="sw-card">
         <p class={meta}>
           <span class="tabular-nums">{pad(total)} / {pad(total)}</span>
@@ -184,28 +184,18 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
       </article>
     </div>
 
-    <!-- Dock inferior: la línea se llena con el recorrido (--sw-r, 0 → 1, lo pone el motor) y cada parada es un enlace.
-         En móvil solo se ve la parada actual. El motor marca la activa con .is-active. -->
-    <div class="sw-dock">
-      <nav class="sw-route" aria-label={p.railLabel}>
-        <span class="sw-dock__line" aria-hidden="true"><i></i></span>
-        {
-          paradas.map((parada, i) => (
-            <a href={`#${parada.id}`} class="sw-route__dot" aria-current={i === 0 ? 'step' : undefined}>
-              <span class="sw-route__num tabular-nums">
-                {pad(i + 1)}
-                <span class="sw-route__of"> / {pad(total)}</span>
-              </span>
-              <span class="sw-route__label">{lugares[i]}</span>
-            </a>
-          ))
-        }
-      </nav>
-      <a href={wa} target="_blank" rel="noopener" class="btn btn-primary btn-sm shrink-0 rounded-lg">
-        <Icon name="whatsapp" class="size-4" />
-        {t.reservarCorto}
-      </a>
-    </div>
+    <nav class="sw-route hidden md:flex" aria-label={p.railLabel}>
+      {
+        paradas.map((parada, i) => (
+          <a href={`#${parada.id}`} class="sw-route__dot" aria-current={i === 0 ? 'step' : undefined}>
+            <span class="sw-route__label">{lugares[i]}</span>
+            <i>
+              <Icon name={iconos[i]} class="sw-route__icon" />
+            </i>
+          </a>
+        ))
+      }
+    </nav>
 
     <div class="sw-hint" aria-hidden="true">
       <span>{p.pista}</span>
@@ -230,6 +220,145 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     --sw-font-body: var(--font-sans);
   }
 
+  /* El hero puede ser algo más ancho que el resto de paradas para que el titular respire. */
+  @media (min-width: 861px) {
+    .sw-copy {
+      left: 48px;
+    }
+    .sw-copy--hero {
+      width: min(50vw, 680px);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .sw-copy {
+      left: 96px;
+    }
+  }
+
+  /* Riel con iconos: círculos de 28 px con el icono de cada parada en vez de puntos. */
+  .sw-route {
+    gap: 16px;
+  }
+  .sw-route__dot {
+    width: 32px;
+    height: 32px;
+  }
+  .sw-route__dot i {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: var(--color-tinta-suave);
+  }
+  .sw-route__icon {
+    width: 16px;
+    height: 16px;
+  }
+  .sw-route__dot:hover i {
+    transform: scale(1.1);
+    color: #fff;
+  }
+  .sw-route__dot.is-active i {
+    transform: scale(1.15);
+    color: #fff;
+  }
+  .sw-route__label {
+    right: 40px;
+  }
+
+  /* ---- Opciones del velo de texto (data-velo en <html>; sin atributo = el velo blanco original). ---- */
+
+  /* corto: la mitad de ancho y más transparente; el vídeo se ve casi entero. */
+  html[data-velo='corto'] .sw-copylayer::before {
+    width: min(56vw, 820px);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--sw-bg) 86%, transparent) 0%,
+      color-mix(in srgb, var(--sw-bg) 62%, transparent) 45%,
+      transparent 100%
+    );
+  }
+
+  /* vidrio: desenfoque detrás del texto con un tinte cálido leve, sin blanco. */
+  html[data-velo='vidrio'] .sw-copylayer::before {
+    width: min(52vw, 780px);
+    background: color-mix(in srgb, var(--sw-bg) 30%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    backdrop-filter: blur(20px) saturate(1.15);
+    -webkit-mask-image: linear-gradient(90deg, #000 60%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 60%, transparent 100%);
+  }
+
+  /* oscuro: degradado oscuro y texto blanco, como un título de cine. */
+  html[data-velo='oscuro'] .sw-copylayer::before {
+    width: min(64vw, 960px);
+    background: linear-gradient(90deg, rgb(20 16 12 / 0.74) 0%, rgb(20 16 12 / 0.5) 45%, transparent 100%);
+  }
+  html[data-velo='oscuro'] .sw-copy :is(p, h2, .text-tinta, .text-tinta-suave, .link):not(li) {
+    color: #fff;
+    text-shadow: 0 1px 12px rgb(20 16 12 / 0.45);
+  }
+  html[data-velo='oscuro'] .sw-copy .text-tinta-suave:not(li) {
+    color: rgb(255 255 255 / 0.82);
+  }
+  html[data-velo='oscuro'] .sw-copy :is(.eyebrow, .text-teja) {
+    color: #f3b98f;
+  }
+  html[data-velo='oscuro'] .sw-copy h1 > span + span {
+    background-image: linear-gradient(90deg, #fff, #ece4d8);
+  }
+  html[data-velo='oscuro'] .sw-hint {
+    color: #fff;
+    text-shadow: 0 1px 8px rgb(20 16 12 / 0.5);
+  }
+  html[data-velo='oscuro'] .sw-copy li {
+    text-shadow: none;
+  }
+
+  /* tarjeta: sin velo; el texto va en una tarjeta arena compacta, siempre a la izquierda. */
+  html[data-velo='tarjeta'] .sw-copylayer::before {
+    display: none;
+  }
+  html[data-velo='tarjeta'] .sw-card {
+    padding: 32px;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--sw-bg) 92%, transparent);
+    box-shadow:
+      0 1px 2px rgb(30 25 19 / 0.06),
+      0 16px 48px -16px rgb(30 25 19 / 0.3);
+  }
+  html[data-velo='tarjeta'] .sw-copy :is(p, li) {
+    text-shadow: none;
+  }
+
+  @media (max-width: 860px) {
+    html[data-velo] .sw-copylayer::before {
+      width: 100%;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    html[data-velo='corto'] .sw-copylayer::before {
+      background: linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--sw-bg) 90%, transparent) 0%,
+        color-mix(in srgb, var(--sw-bg) 70%, transparent) 40%,
+        transparent 70%
+      );
+    }
+    html[data-velo='vidrio'] .sw-copylayer::before {
+      -webkit-mask-image: linear-gradient(0deg, #000 50%, transparent 75%);
+      mask-image: linear-gradient(0deg, #000 50%, transparent 75%);
+    }
+    html[data-velo='oscuro'] .sw-copylayer::before {
+      background: linear-gradient(0deg, rgb(20 16 12 / 0.8) 0%, rgb(20 16 12 / 0.55) 45%, transparent 75%);
+    }
+    html[data-velo='tarjeta'] .sw-card {
+      padding: 20px;
+      border-radius: 16px;
+    }
+  }
+
   /* Sin JS: el paseo no puede montarse; se ve la primera parada con su texto y el resto de la página debajo. */
   html:not(.js) .sw-viewport {
     position: relative;
@@ -238,7 +367,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
     margin-top: 0;
   }
   html:not(.js) .sw-copy:not(.sw-copy--hero),
-  html:not(.js) .sw-dock,
+  html:not(.js) .sw-route,
   html:not(.js) .sw-hint {
     display: none;
   }
@@ -248,5 +377,122 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
   import { mountScrollWorld } from '../../scripts/scroll-world.js';
 
   const world = document.querySelector<HTMLElement>('[data-world]');
-  if (world?.dataset.config) mountScrollWorld(world, JSON.parse(world.dataset.config));
+  if (world?.dataset.config) {
+    mountScrollWorld(world, JSON.parse(world.dataset.config));
+    guiado(world);
+  }
+
+  /*
+   * Recorrido guiado (opción data-paso="guiado" en <html>): dentro del paseo, un gesto de scroll, una flecha,
+   * espacio o un clic en el riel lleva la cámara a la parada siguiente (o anterior) a ritmo constante, y ahí se
+   * detiene. Fuera del paseo, y al pasar la última parada, el scroll vuelve a ser normal.
+   */
+  function guiado(root: HTMLElement) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const anchors = [...root.querySelectorAll<HTMLElement>('.sw-anchor')];
+    // Ritmo: cada tramo de vídeo dura lo mismo sin importar cuánto scroll ocupe (cerca de sus 8 s reales), para
+    // apreciarlo. Saltar varias paradas desde el riel suma un poco por parada extra.
+    const MS_TRAMO = 6000;
+    const MS_TRAMO_EXTRA = 2500;
+    let animando = false;
+    let ultimaRueda = 0;
+
+    const activo = () => document.documentElement.dataset.paso === 'guiado';
+    const sw = () => (root as HTMLElement & { __sw?: { top0: number; vh: number } }).__sw;
+    const paradasY = () => {
+      const s = sw();
+      return s ? anchors.map((a) => s.top0 + parseFloat(a.style.top || '0')) : [];
+    };
+    // Parada destino en esa dirección, o null si ya no hay (el scroll sigue normal).
+    const destino = (dir: number) => {
+      const ys = paradasY();
+      const y = window.scrollY;
+      if (!ys.length || y > ys[ys.length - 1] + 4 || y < ys[0] - 4) return null;
+      if (dir > 0) return ys.find((p) => p > y + 4) ?? null;
+      return [...ys].reverse().find((p) => p < y - 4) ?? null;
+    };
+    // Seno: arranca y frena suave sin acelerar de más en el medio (pico 1.6× la velocidad media).
+    const ease = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+
+    function ir(y: number) {
+      const desde = window.scrollY;
+      const ys = paradasY();
+      const cerca = (v: number) => ys.reduce((m, p, i) => (Math.abs(p - v) < Math.abs(ys[m] - v) ? i : m), 0);
+      const tramos = Math.max(1, Math.abs(cerca(y) - cerca(desde)));
+      const dur = reduce ? 0 : MS_TRAMO + (tramos - 1) * MS_TRAMO_EXTRA;
+      animando = true;
+      const t0 = performance.now();
+      const paso = (ahora: number) => {
+        const t = dur ? Math.min(1, (ahora - t0) / dur) : 1;
+        window.scrollTo({ top: desde + (y - desde) * ease(t), behavior: 'instant' });
+        if (t < 1) requestAnimationFrame(paso);
+        else animando = false;
+      };
+      requestAnimationFrame(paso);
+    }
+
+    // Devuelve true si el gesto se consumió (el llamador cancela el scroll nativo).
+    function gesto(dir: number) {
+      if (!activo()) return false;
+      if (animando) return true;
+      const y = destino(dir);
+      if (y == null) return false;
+      ir(y);
+      return true;
+    }
+
+    window.addEventListener(
+      'wheel',
+      (e) => {
+        // Un gesto nuevo empieza tras 200 ms sin eventos de rueda. La inercia del trackpad manda eventos seguidos
+        // durante un buen rato: esos solo se consumen, para que no salten otra parada al terminar la animación.
+        const ahora = performance.now();
+        const nuevo = ahora - ultimaRueda > 200;
+        ultimaRueda = ahora;
+        if (!activo() || Math.abs(e.deltaY) < 2) return;
+        const dir = Math.sign(e.deltaY);
+        if (nuevo ? gesto(dir) : animando || destino(dir) != null) e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    window.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (e.altKey || e.ctrlKey || e.metaKey || target.closest('input, textarea, select, [contenteditable]')) return;
+      const abajo = ['ArrowDown', 'PageDown'].includes(e.key) || (e.key === ' ' && !e.shiftKey);
+      const arriba = ['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey);
+      if ((abajo || arriba) && gesto(abajo ? 1 : -1)) e.preventDefault();
+    });
+
+    let toqueY = 0;
+    let toqueUsado = false;
+    window.addEventListener('touchstart', (e) => {
+      toqueY = e.touches[0].clientY;
+      toqueUsado = false;
+    }, { passive: true });
+    window.addEventListener(
+      'touchmove',
+      (e) => {
+        if (!activo()) return;
+        const dy = toqueY - e.touches[0].clientY;
+        const dir = Math.sign(dy);
+        if (animando || (dir && destino(dir) != null)) {
+          e.preventDefault();
+          if (!toqueUsado && Math.abs(dy) > 24) toqueUsado = gesto(dir);
+        }
+      },
+      { passive: false },
+    );
+
+    // Clic en el riel: viaja hasta esa parada al mismo ritmo (más largo si está lejos).
+    root.querySelectorAll<HTMLAnchorElement>('.sw-route__dot').forEach((dot, i) => {
+      dot.addEventListener('click', (e) => {
+        if (!activo() || animando) return;
+        const y = paradasY()[i];
+        if (y == null) return;
+        e.preventDefault();
+        ir(y);
+      });
+    });
+  }
 </script>

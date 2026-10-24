@@ -22,8 +22,8 @@ export default defineConfig({
   integrations: site
     ? [
         sitemap({
-          // La versión "antes" es material de la charla: no se indexa.
-          filter: (page) => !/\/antes\/?$/.test(new URL(page).pathname),
+          // La versión "antes" y el panel de opciones son material de la charla: no se indexan.
+          filter: (page) => !/\/(antes|opciones)\/?$/.test(new URL(page).pathname),
           i18n: { defaultLocale: 'es', locales: { es: 'es-SV', en: 'en' } },
         }),
       ]

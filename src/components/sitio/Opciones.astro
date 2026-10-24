@@ -1,0 +1,102 @@
+---
+// Panel para comparar opciones de diseño en vivo. Solo se monta en /opciones (src/pages/opciones.astro).
+// Lo elegido se guarda para la sesión del navegador y también se aplica en /. Los valores predeterminados viven en
+// el script de opciones de Layout.astro; «Restablecer» vuelve a ellos.
+const grupos = [
+  { k: 'menu', titulo: 'Menú', opciones: [['original', 'Píldora (predeterminado)'], ['suave', 'A · Rectángulo suave'], ['barra', 'B · Barra plana'], ['recto', 'C · Chip recto']] },
+  { k: 'velo', titulo: 'Velo del texto', opciones: [['original', 'Velo blanco (v1)'], ['corto', 'A · Corto y ligero'], ['vidrio', 'B · Vidrio esmerilado'], ['oscuro', 'C · Oscuro, texto blanco (predeterminado)'], ['tarjeta', 'D · Tarjeta compacta']] },
+  { k: 'paso', titulo: 'Scroll', opciones: [['guiado', 'Guiado parada a parada (predeterminado)'], ['original', 'Libre']] },
+];
+---
+
+<aside class="opciones" aria-label="Opciones de diseño">
+  <details open>
+    <summary>Opciones</summary>
+    {
+      grupos.map((g) => (
+        <fieldset>
+          <legend>{g.titulo}</legend>
+          {g.opciones.map(([v, label]) => (
+            <label>
+              <input type="radio" name={g.k} value={v} />
+              {label}
+            </label>
+          ))}
+        </fieldset>
+      ))
+    }
+    <button type="button" class="restablecer">Restablecer</button>
+  </details>
+</aside>
+
+<style>
+  .opciones {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 90;
+    width: 232px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 0.94);
+    box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.35);
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: #1e1913;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  fieldset {
+    margin-top: 8px;
+    border: 0;
+    padding: 0;
+  }
+  legend {
+    font-weight: 600;
+    color: #5b5146;
+  }
+  .restablecer {
+    margin-top: 12px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgb(30 25 19 / 0.2);
+  }
+  label {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  const d = document.documentElement;
+  const leer = () => {
+    try {
+      return JSON.parse(sessionStorage.getItem('rv-opciones') || '{}');
+    } catch {
+      return {};
+    }
+  };
+  document.querySelector('.restablecer')?.addEventListener('click', () => {
+    try {
+      sessionStorage.removeItem('rv-opciones');
+    } catch {}
+    location.reload();
+  });
+  document.querySelectorAll<HTMLInputElement>('.opciones input').forEach((input) => {
+    input.checked = (d.dataset[input.name] ?? 'original') === input.value;
+    input.addEventListener('change', () => {
+      if (input.value === 'original') delete d.dataset[input.name];
+      else d.dataset[input.name] = input.value;
+      const o = leer();
+      o[input.name] = input.value;
+      try {
+        sessionStorage.setItem('rv-opciones', JSON.stringify(o));
+      } catch {}
+    });
+  });
+</script>

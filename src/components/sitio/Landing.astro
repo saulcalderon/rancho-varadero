@@ -10,19 +10,22 @@ import Pasos from './Pasos.astro';
 import Faq from './Faq.astro';
 import FinalCta from './FinalCta.astro';
 import Footer from './Footer.astro';
+import Opciones from './Opciones.astro';
 import { sitio, type Lang } from '../../data/sitio';
 import { structuredData } from '../../data/schema';
 
 interface Props {
   lang: Lang;
+  /** /opciones: la misma portada con el panel de opciones de diseño (sin indexar). */
+  opciones?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, opciones = false } = Astro.props;
 const t = sitio[lang];
 const jsonLd = JSON.stringify(structuredData(lang, Astro.site)).replaceAll('<', '\\u003c');
 ---
 
-<Layout lang={lang} title={t.seo.title} description={t.seo.description} alternates>
+<Layout lang={lang} title={t.seo.title} description={t.seo.description} alternates={!opciones} noindex={opciones}>
   <script slot="head" type="application/ld+json" set:html={jsonLd} />
   <Header lang={lang} />
   <main id="contenido" tabindex="-1" class="outline-none">
@@ -35,6 +38,7 @@ const jsonLd = JSON.stringify(structuredData(lang, Astro.site)).replaceAll('<', 
     <FinalCta lang={lang} />
   </main>
   <Footer lang={lang} />
+  {opciones && <Opciones />}
   <script>
     import '../../scripts/sitio';
   </script>

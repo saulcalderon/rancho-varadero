@@ -29,16 +29,14 @@ export const telefonos = contacto.telefonos.map((numero) => ({ numero, href: tel
 // paseo-k.webp = primer fotograma del clip k = parada k-1; paseo-7.webp = último fotograma del clip 6 = parada 6.
 // `focus` es la posición horizontal (0–100 %) del recorte cuando la pantalla es más estrecha que el 16:9 (móvil),
 // elegida mirando cada fotograma para que el sujeto quede a la vista.
-// `texto` coloca la tarjeta de texto en escritorio (x · y: start | center | end) sobre la zona tranquila de cada
-// fotograma, para no tapar el sujeto. En móvil todas van abajo, sobre el dock.
 export const paradas = [
-  { id: 'inicio', poster: poster1, clip: '/video/paseo-1.mp4', focus: 50, texto: ['start', 'center'] }, // piscina frente a la casa
-  { id: 'descanso', poster: poster2, clip: '/video/paseo-2.mp4', focus: 22, texto: ['end', 'center'] }, // kiosko con hamacas (izquierda)
-  { id: 'sala', poster: poster3, clip: '/video/paseo-3.mp4', focus: 36, texto: ['start', 'end'] }, // sofás de mimbre a la derecha
-  { id: 'eventos', poster: poster4, clip: '/video/paseo-4.mp4', focus: 26, texto: ['end', 'start'] }, // jardín por las ventanas de la izquierda
-  { id: 'piscina', poster: poster5, clip: '/video/paseo-5.mp4', focus: 50, texto: ['center', 'start'] }, // piscina centrada, palmeras arriba
-  { id: 'playa', poster: poster6, clip: '/video/paseo-6.mp4', focus: 55, texto: ['start', 'end'] }, // camino al centro, grama a la izquierda
-  { id: 'reserva', poster: poster7, clip: null, focus: 68, texto: ['end', 'center'] }, // vista aérea: kiosko abajo a la izquierda
+  { id: 'inicio', poster: poster1, clip: '/video/paseo-1.mp4', focus: 50 }, // piscina frente a la casa
+  { id: 'descanso', poster: poster2, clip: '/video/paseo-2.mp4', focus: 22 }, // kiosko con hamacas (izquierda)
+  { id: 'sala', poster: poster3, clip: '/video/paseo-3.mp4', focus: 36 }, // sofás de mimbre
+  { id: 'eventos', poster: poster4, clip: '/video/paseo-4.mp4', focus: 26 }, // corredor abierto al jardín
+  { id: 'piscina', poster: poster5, clip: '/video/paseo-5.mp4', focus: 50 }, // piscina con el mar al fondo
+  { id: 'playa', poster: poster6, clip: '/video/paseo-6.mp4', focus: 55 }, // camino al kiosko de playa
+  { id: 'reserva', poster: poster7, clip: null, focus: 68 }, // vista aérea: piscina entre palmeras (el kiosko queda bajo el texto en móvil)
 ] as const;
 
 // Cuánta pantalla de scroll ocupa cada parada (en alturas de pantalla). Más en la primera y la última.
@@ -75,7 +73,6 @@ export const sitio = {
       { href: '#preguntas', label: 'Preguntas' },
     ],
     navLabel: 'Principal',
-    menu: 'Menú',
     menuAbrir: 'Abrir menú',
     menuCerrar: 'Cerrar menú',
     idioma: { label: 'Idioma', actual: 'ES', otro: 'EN', otroNombre: 'English', otroHref: rutas.en, otroLang: 'en' },
@@ -254,7 +251,6 @@ export const sitio = {
       { href: '#preguntas', label: 'FAQ' },
     ],
     navLabel: 'Main',
-    menu: 'Menu',
     menuAbrir: 'Open menu',
     menuCerrar: 'Close menu',
     idioma: { label: 'Language', actual: 'EN', otro: 'ES', otroNombre: 'Español', otroHref: rutas.es, otroLang: 'es' },

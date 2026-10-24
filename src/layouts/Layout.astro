@@ -31,6 +31,21 @@ const robots = noindex ? 'noindex, follow' : 'index, follow, max-image-preview:l
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <script is:inline>document.documentElement.classList.add('js');</script>
+    <!-- Opciones de diseño, elegidas en /opciones y guardadas para la sesión del navegador (también ?menu=, ?velo=,
+         ?paso=). Predeterminado: menú píldora, velo oscuro con texto blanco y scroll guiado. -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement, q = new URLSearchParams(location.search), o = {};
+        try { o = JSON.parse(sessionStorage.getItem('rv-opciones') || '{}'); } catch (e) {}
+        var predeterminado = { menu: 'original', velo: 'oscuro', paso: 'guiado' };
+        ['menu', 'velo', 'paso'].forEach(function (k) {
+          if (q.has(k)) o[k] = q.get(k);
+          var v = o[k] || predeterminado[k];
+          if (v !== 'original') d.dataset[k] = v;
+        });
+        try { sessionStorage.setItem('rv-opciones', JSON.stringify(o)); } catch (e) {}
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
