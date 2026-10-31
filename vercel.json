@@ -9,8 +9,7 @@
         }
       ],
       "destination": "https://ranchovaradero.alquileresmm.com/:path*",
-      "permanent": true,
-      "statusCode": 308
+      "permanent": true
     }
   ]
 }
