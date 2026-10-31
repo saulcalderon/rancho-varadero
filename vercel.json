@@ -1,0 +1,16 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-varadero.vercel.app"
+        }
+      ],
+      "destination": "https://ranchovaradero.alquileresmm.com/:path*",
+      "permanent": true,
+      "statusCode": 308
+    }
+  ]
+}

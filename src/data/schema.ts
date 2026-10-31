@@ -35,9 +35,9 @@ export function structuredData(lang: Lang, site: URL | undefined) {
       '@type': 'ContactPoint',
       telephone,
       contactType: 'reservations',
-      availableLanguage: ['es'],
+      availableLanguage: ['es', 'en'],
     })),
-    sameAs: [contacto.whatsapp],
+    sameAs: contacto.whatsapp ? [contacto.whatsapp] : undefined,
   };
 
   const faq = {

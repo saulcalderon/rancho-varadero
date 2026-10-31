@@ -57,7 +57,7 @@ const ease = 'transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]';
 
     <div class="flex items-center gap-1">
       <div class="hidden items-center text-xs font-bold sm:flex" role="group" aria-label={t.idioma.label}>
-        <span aria-current="page" class="flex h-9 items-center rounded-full px-2 text-tinta">
+        <span aria-current="page" class="flex h-11 min-h-11 items-center rounded-full px-2 text-tinta">
           {t.idioma.actual}
         </span>
         <a
@@ -65,7 +65,7 @@ const ease = 'transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]';
           hreflang={t.idioma.otroLang}
           lang={t.idioma.otroLang}
           aria-label={t.idioma.otroNombre}
-          class:list={['flex h-9 items-center rounded-full px-2 text-tinta-suave hover:bg-tinta/5 hover:text-tinta', ease]}
+          class:list={['flex h-11 min-h-11 items-center rounded-full px-3 text-tinta-suave hover:bg-tinta/5 hover:text-tinta', ease]}
         >
           {t.idioma.otro}
         </a>
@@ -127,7 +127,7 @@ const ease = 'transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]';
     <p class="flex flex-wrap justify-center gap-x-3 gap-y-1">
       {
         telefonos.map((tel) => (
-          <a href={tel.href} class="link inline-flex items-center gap-1">
+          <a href={tel.href} class="link inline-flex items-center gap-1 min-h-11 py-2">
             <Icon name="phone" />
             {tel.numero}
           </a>

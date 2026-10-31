@@ -4,12 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
 // URL pública del sitio. De aquí salen canonical, hreflang, og:url, og:image absoluta, JSON-LD, sitemap y robots.txt.
-// TODO(dominio): cuando exista el dominio final, define SITE_URL (p. ej. en Vercel → Settings → Environment Variables).
-// Mientras tanto, en Vercel se usa la URL de producción que Vercel expone en el build (VERCEL_PROJECT_PRODUCTION_URL).
-// Sin ninguna de las dos, el build sigue funcionando, pero sin URLs absolutas ni sitemap.
-const site =
-  process.env.SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined);
+// El dominio de producción es https://ranchovaradero.alquileresmm.com
+const site = process.env.SITE_URL || 'https://ranchovaradero.alquileresmm.com';
 
 // https://astro.build/config
 export default defineConfig({

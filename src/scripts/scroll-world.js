@@ -422,7 +422,13 @@ export function mountScrollWorld(container, config) {
   layout();
   container.classList.add('is-mounted');
   progress();
-  if (!noVideo) SEGMENTS.forEach(s => loadClip(s));
+  // Only load clips near the initial viewport instead of all at once
+  if (!noVideo) {
+    const y = scrollPos();
+    SEGMENTS.forEach(s => {
+      if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
+    });
+  }
   // Deep link (e.g. /#reserva): anchors only get their position now, so scroll to it again.
   if (location.hash) {
     const target = anchors.find(a => a && '#' + a.id === decodeURIComponent(location.hash));

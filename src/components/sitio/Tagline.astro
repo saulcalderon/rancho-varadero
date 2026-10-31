@@ -13,7 +13,7 @@ const text = t.lineas.join(' ');
 <section aria-label={t.label} class="px-4 py-24 md:px-12 xl:px-24">
   <div class="mx-auto flex min-h-[70svh] max-w-[680px] items-center">
     <p class="sr-only">{text}</p>
-    <p data-words aria-hidden="true" class="text-4xl font-semibold tracking-tight text-balance lg:text-5xl">
+    <p data-words aria-hidden="true" class="text-4xl font-semibold tracking-tight text-balance lg:text-5xl" style="min-height: 10em;">
       {
         t.lineas.map((linea) => (
           <span class="block">
@@ -35,6 +35,7 @@ const text = t.lineas.join(' ');
   .word {
     color: color-mix(in oklab, var(--color-tinta) 28%, transparent);
     transition: color 700ms var(--ease-fluid);
+    display: inline-block;
   }
 
   .word:global(.is-lit) {
