@@ -1,6 +1,35 @@
 // Animaciones de la página fuera del paseo. Sin librerías: el paseo ya trae su propio suavizado y nada debe pelear con él.
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Conversion tracking: WhatsApp and phone clicks with Vercel Analytics
+import { track } from '@vercel/analytics';
+
+function setupConversionTracking() {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest<HTMLAnchorElement>('a[href^="https://wa.me"], a[href^="tel:"]');
+    if (!link) return;
+    
+    const href = link.getAttribute('href') || '';
+    const isWhatsApp = href.startsWith('https://wa.me');
+    const isPhone = href.startsWith('tel:');
+    
+    if (isWhatsApp || isPhone) {
+      const section = link.closest('[id]')?.id || 
+                      link.closest('header') ? 'header' : 
+                      link.closest('footer') ? 'footer' : 
+                      'unknown';
+      
+      track(isWhatsApp ? 'whatsapp_click' : 'phone_click', {
+        location: section,
+        href: href
+      });
+    }
+  });
+}
+
+setupConversionTracking();
+
 // Entradas al hacer scroll (B7): IntersectionObserver, nunca un listener de scroll.
 const reveal = new IntersectionObserver(
   (entries) => {

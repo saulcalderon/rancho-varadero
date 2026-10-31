@@ -164,7 +164,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
             <Icon name="whatsapp" class="size-5" />
             {t.reservar}
           </a>
-          <a href={telefonos[0].href} class="btn btn-ghost btn-lg">
+          <a href={telefonos[0].href} class="btn btn-ghost btn-lg min-h-11">
             <Icon name="phone" class="size-5" />
             {t.llamar}
           </a>
@@ -175,7 +175,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
             telefonos.map((tel, k) => (
               <>
                 {k > 0 && <span aria-hidden="true"> · </span>}
-                <a href={tel.href} class="link font-semibold whitespace-nowrap text-tinta">
+                <a href={tel.href} class="link font-semibold whitespace-nowrap text-tinta inline-block min-h-11 py-2">
                   {tel.numero}
                 </a>
               </>

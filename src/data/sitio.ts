@@ -412,12 +412,20 @@ export type Sitio = (typeof sitio)[Lang];
 // Fotos reales de la propiedad (galería, servicios, JSON-LD). Mismo orden que el paseo.
 // Son los keyframes retocados del recorrido (media/keyframes/07-final, 16:9, 1440×810). El camino a la playa se
 // queda en su foto vertical original: es la pieza alta de la cuadrícula de la galería.
+import piscinaCasa from '../assets/galeria/0-piscina-casa.webp';
+import kioskoHamacas from '../assets/galeria/1-kiosko-hamacas.webp';
+import sala from '../assets/galeria/2-sala.webp';
+import corredor from '../assets/galeria/3-corredor.webp';
+import piscinaMar from '../assets/galeria/4-piscina-mar.webp';
+import caminoPlaya from '../assets/galeria/5-camino-playa.webp';
+import aereo from '../assets/galeria/6-aereo.webp';
+
 export const galeria = [
-  { src: '/galeria/0-piscina-casa.webp', id: 'piscinaCasa', w: 1440, h: 810 },
-  { src: '/galeria/1-kiosko-hamacas.webp', id: 'casa', w: 1440, h: 810 },
-  { src: '/galeria/2-sala.webp', id: 'sala', w: 1440, h: 810 },
-  { src: '/galeria/3-corredor.webp', id: 'corredor', w: 1440, h: 810 },
-  { src: '/galeria/4-piscina-mar.webp', id: 'piscinaMar', w: 1440, h: 810 },
-  { src: '/galeria/5-camino-playa.webp', id: 'caminoPlaya', w: 1200, h: 1600 },
-  { src: '/galeria/6-aereo.webp', id: 'aereo', w: 1440, h: 810 },
+  { src: piscinaCasa, id: 'piscinaCasa', w: 1440, h: 810 },
+  { src: kioskoHamacas, id: 'casa', w: 1440, h: 810 },
+  { src: sala, id: 'sala', w: 1440, h: 810 },
+  { src: corredor, id: 'corredor', w: 1440, h: 810 },
+  { src: piscinaMar, id: 'piscinaMar', w: 1440, h: 810 },
+  { src: caminoPlaya, id: 'caminoPlaya', w: 1200, h: 1600 },
+  { src: aereo, id: 'aereo', w: 1440, h: 810 },
 ] as const;
