@@ -29,7 +29,7 @@ export function structuredData(lang: Lang, site: URL | undefined) {
     },
     maximumAttendeeCapacity: 12,
     amenityFeature: amenidades,
-    image: site ? galeria.map((foto) => abs(foto.src)) : undefined,
+    image: site ? galeria.map((foto) => abs(typeof foto.src === 'string' ? foto.src : foto.src.src)) : undefined,
     brand: { '@type': 'Organization', name: 'Alquileres MM', alternateName: 'Ranchos MM' },
     contactPoint: contacto.telefonos.map((telephone) => ({
       '@type': 'ContactPoint',
