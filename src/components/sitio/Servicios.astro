@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Icon, { type IconName } from './Icon.astro';
 import { galeria, sitio, type Lang } from '../../data/sitio';
 
@@ -27,10 +28,12 @@ const foto = galeria.find((f) => f.id === 'piscinaMar')!;
         class="relative flex min-h-80 flex-col justify-end overflow-hidden rounded-3xl bg-tinta sm:col-span-2 lg:row-span-3"
         data-reveal
       >
-        <img
+        <Image
           src={foto.src}
           width={foto.w}
           height={foto.h}
+          widths={[400, 640, 800, 1024, 1440]}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 50vw"
           alt={t.alt[foto.id]}
           loading="lazy"
           decoding="async"

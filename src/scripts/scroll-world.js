@@ -153,23 +153,73 @@ export function mountScrollWorld(container, config) {
   // segment scenes
   const preScenes = stage.querySelectorAll('.sw-scene');
   const adoptScenes = preScenes.length === NSEG;
+  const videoPostersDesktop = config.videoPostersDesktop || [];
+  const videoPostersMobile = config.videoPostersMobile || [];
   SEGMENTS.forEach((s, i) => {
-    let scene, img;
+    let scene, img, posterPicture;
     if (adoptScenes) {
       scene = preScenes[i];
       img = scene.querySelector('.sw-scene__still') || scene.appendChild(el('img', 'sw-scene__still'));
+      posterPicture = scene.querySelector('.sw-scene__video-poster');
     } else {
       scene = el('div', 'sw-scene');
       img = el('img', 'sw-scene__still'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy';
       const poster = (isMobile() && s.stillM) ? s.stillM : s.still;
       if (poster) img.src = poster;
-      scene.appendChild(img); stage.appendChild(scene);
+      scene.appendChild(img);
+      // Add video poster for connector segments with responsive AVIF/WebP
+      if (s.kind === 'conn' && videoPostersDesktop[s.si] && videoPostersMobile[s.si]) {
+        const desktop = videoPostersDesktop[s.si];
+        const mobile = videoPostersMobile[s.si];
+        posterPicture = document.createElement('picture');
+        posterPicture.className = 'sw-scene__video-poster';
+        posterPicture.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+        
+        // Mobile AVIF
+        const mobileAvif = document.createElement('source');
+        mobileAvif.srcset = mobile.avif;
+        mobileAvif.type = 'image/avif';
+        mobileAvif.media = '(max-width: 768px)';
+        posterPicture.appendChild(mobileAvif);
+        
+        // Mobile WebP fallback
+        const mobileWebp = document.createElement('source');
+        mobileWebp.srcset = mobile.webp;
+        mobileWebp.type = 'image/webp';
+        mobileWebp.media = '(max-width: 768px)';
+        posterPicture.appendChild(mobileWebp);
+        
+        // Desktop AVIF
+        const desktopAvif = document.createElement('source');
+        desktopAvif.srcset = desktop.avif;
+        desktopAvif.type = 'image/avif';
+        posterPicture.appendChild(desktopAvif);
+        
+        // Desktop WebP fallback
+        const desktopWebp = document.createElement('source');
+        desktopWebp.srcset = desktop.webp;
+        desktopWebp.type = 'image/webp';
+        posterPicture.appendChild(desktopWebp);
+        
+        // Final img fallback
+        const posterImg = document.createElement('img');
+        posterImg.src = desktop.webp;
+        posterImg.alt = '';
+        posterImg.decoding = 'async';
+        posterImg.loading = i < 2 ? 'eager' : 'lazy';
+        posterImg.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:var(--sw-fx,50%) center;';
+        posterPicture.appendChild(posterImg);
+        
+        scene.appendChild(posterPicture);
+        s.posterImg = posterImg;
+      }
+      stage.appendChild(scene);
     }
     scene.style.setProperty('--sw-accent', s.accent || '');
     scene.style.setProperty('--sw-fx', s.fx0 + '%');
     scene.dataset.seg = String(i);
     scene.dataset.kind = s.kind;
-    s.el = scene; s.img = img; s.video = null; s.hasClip = false;
+    s.el = scene; s.img = img; s.posterPicture = posterPicture; s.video = null; s.hasClip = false;
     s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false; s.fx = s.fx0;
   });
 
@@ -282,17 +332,33 @@ export function mountScrollWorld(container, config) {
         v.setAttribute('aria-hidden', 'true'); v.setAttribute('tabindex', '-1');
         v.disablePictureInPicture = true; v.setAttribute('disableremoteplayback', '');
         v.src = URL.createObjectURL(blob);
+        v.style.opacity = '0';
+        v.style.transition = 'opacity 300ms ease-in';
+        v.style.position = 'absolute';
+        v.style.inset = '0';
+        v.style.width = '100%';
+        v.style.height = '100%';
+        v.style.objectFit = 'cover';
+        v.style.objectPosition = 'var(--sw-fx, 50%) center';
+        v.style.zIndex = '2';
         v.addEventListener('loadedmetadata', () => { s.ready = true; read(); });
-        // Reveal the video (hide the still poster) only once a real frame has painted —
-        // on iOS a seeked-but-never-played muted video stays blank.
-        v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
+        // Reveal the video (fade in over poster) only once a real frame has painted
+        // Keep poster visible underneath as permanent fallback
+        v.addEventListener('seeked', () => { 
+          s.el.classList.add('has-clip');
+          requestAnimationFrame(() => { 
+            v.style.opacity = '1';
+          });
+        }, { once: true });
         s.el.appendChild(v); s.video = v; s.hasClip = true;
         loaded++; progress();
-        // Prime right away: on iOS a paused video that never played stays at readyState 1 and its seeks never
-        // resolve. Muted inline play() is allowed without a gesture (Low Power Mode is retried on the next touch).
         primeVideo(v);
       })
-      .catch((e) => { s.loading = false; failed++; progress(); s.el.dataset.error = String(e && e.message || e); })
+      .catch((e) => { 
+        s.loading = false; failed++; progress(); 
+        s.el.dataset.error = String(e && e.message || e);
+        // Keep poster visible if video fails
+      })
       .finally(() => { inFlight--; pump(); });
   }
 
@@ -307,6 +373,12 @@ export function mountScrollWorld(container, config) {
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
+      // Aggressively preload next video segment when current is >40% through for instant transitions
+      const currentSeg = SEGMENTS[ci];
+      if (currentSeg && currentSeg.kind === 'conn' && i === ci + 1 && s.kind === 'conn') {
+        const progress = (y - currentSeg.start) / (currentSeg.end - currentSeg.start);
+        if (progress > 0.4) loadClip(s);
+      }
       // Server-rendered posters after the first one arrive as data-src: fetch them when the
       // segment gets close instead of all at once on landing.
       if (s.img.dataset.src && !s.img.getAttribute('src') && y > s.start - 2.4 * vh && y < s.end + 2.4 * vh) {
@@ -324,6 +396,15 @@ export function mountScrollWorld(container, config) {
       const fx = s.fx0 + (s.fx1 - s.fx0) * local;
       if (Math.abs(fx - s.fx) > 0.05) { s.fx = fx; s.el.style.setProperty('--sw-fx', fx.toFixed(2) + '%'); }
       if (s.clip && (!s.hasClip || !s.ready)) s.img.style.transform = 'none';
+      // Pause videos far offscreen to save CPU/battery
+      if (s.video) {
+        const farOffscreen = outside > 3 * vh;
+        if (farOffscreen && !s.video.paused) {
+          s.video.pause();
+        } else if (!farOffscreen && s.video.paused && s.visible) {
+          s.video.play().catch(() => {});
+        }
+      }
     }
 
     let scrim = 0;
@@ -422,7 +503,13 @@ export function mountScrollWorld(container, config) {
   layout();
   container.classList.add('is-mounted');
   progress();
-  if (!noVideo) SEGMENTS.forEach(s => loadClip(s));
+  // Only load clips near the initial viewport instead of all at once
+  if (!noVideo) {
+    const y = scrollPos();
+    SEGMENTS.forEach(s => {
+      if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
+    });
+  }
   // Deep link (e.g. /#reserva): anchors only get their position now, so scroll to it again.
   if (location.hash) {
     const target = anchors.find(a => a && '#' + a.id === decodeURIComponent(location.hash));

@@ -10,6 +10,13 @@ import poster5 from '../assets/paseo/paseo-5.webp';
 import poster6 from '../assets/paseo/paseo-6.webp';
 import poster7 from '../assets/paseo/paseo-7.webp';
 
+import videoPoster1 from '../assets/video-posters/paseo-1-poster.jpg';
+import videoPoster2 from '../assets/video-posters/paseo-2-poster.jpg';
+import videoPoster3 from '../assets/video-posters/paseo-3-poster.jpg';
+import videoPoster4 from '../assets/video-posters/paseo-4-poster.jpg';
+import videoPoster5 from '../assets/video-posters/paseo-5-poster.jpg';
+import videoPoster6 from '../assets/video-posters/paseo-6-poster.jpg';
+
 export type { Lang };
 
 export const rutas = { es: '/', en: '/en/' } as const;
@@ -29,14 +36,15 @@ export const telefonos = contacto.telefonos.map((numero) => ({ numero, href: tel
 // paseo-k.webp = primer fotograma del clip k = toma estática k-1; paseo-7.webp = último fotograma del clip 6 = toma estática 6.
 // `focus` es la posición horizontal (0–100 %) del recorte cuando la pantalla es más estrecha que el 16:9 (móvil),
 // elegida mirando cada fotograma para que el sujeto quede a la vista.
+// `videoPoster` es la imagen de póster para el video (extraída del primer fotograma).
 export const paradas = [
-  { id: 'inicio', poster: poster1, clip: '/video/paseo-1.mp4', focus: 50 }, // piscina frente a la casa
-  { id: 'descanso', poster: poster2, clip: '/video/paseo-2.mp4', focus: 22 }, // kiosko con hamacas (izquierda)
-  { id: 'sala', poster: poster3, clip: '/video/paseo-3.mp4', focus: 36 }, // sofás de mimbre
-  { id: 'eventos', poster: poster4, clip: '/video/paseo-4.mp4', focus: 26 }, // corredor abierto al jardín
-  { id: 'piscina', poster: poster5, clip: '/video/paseo-5.mp4', focus: 50 }, // piscina con el mar al fondo
-  { id: 'playa', poster: poster6, clip: '/video/paseo-6.mp4', focus: 55 }, // camino al kiosko de playa
-  { id: 'reserva', poster: poster7, clip: null, focus: 68 }, // vista aérea: piscina entre palmeras (el kiosko queda bajo el texto en móvil)
+  { id: 'inicio', poster: poster1, videoPoster: videoPoster1, clip: '/video/opt/paseo-1-desktop.mp4', clipMobile: '/video/opt/paseo-1-mobile.mp4', focus: 50 },
+  { id: 'descanso', poster: poster2, videoPoster: videoPoster2, clip: '/video/opt/paseo-2-desktop.mp4', clipMobile: '/video/opt/paseo-2-mobile.mp4', focus: 22 },
+  { id: 'sala', poster: poster3, videoPoster: videoPoster3, clip: '/video/opt/paseo-3-desktop.mp4', clipMobile: '/video/opt/paseo-3-mobile.mp4', focus: 36 },
+  { id: 'eventos', poster: poster4, videoPoster: videoPoster4, clip: '/video/opt/paseo-4-desktop.mp4', clipMobile: '/video/opt/paseo-4-mobile.mp4', focus: 26 },
+  { id: 'piscina', poster: poster5, videoPoster: videoPoster5, clip: '/video/opt/paseo-5-desktop.mp4', clipMobile: '/video/opt/paseo-5-mobile.mp4', focus: 50 },
+  { id: 'playa', poster: poster6, videoPoster: videoPoster6, clip: '/video/opt/paseo-6-desktop.mp4', clipMobile: '/video/opt/paseo-6-mobile.mp4', focus: 55 },
+  { id: 'reserva', poster: poster7, videoPoster: null, clip: null, clipMobile: null, focus: 68 },
 ] as const;
 
 // Cuánta pantalla de scroll ocupa cada toma estática (en alturas de pantalla). Más en la primera y la última.
@@ -61,6 +69,9 @@ export const sitio = {
       title: 'Rancho Varadero · Casa de playa en primera fila en Playa El Amatal',
       description:
         'Rancho de playa en primera fila frente al mar en Playa El Amatal, La Libertad, El Salvador. Hasta 12 personas, 4 habitaciones con aire acondicionado y piscina privada. Cotiza por WhatsApp.',
+      ogTitle: 'Rancho Varadero · Tu casa de playa frente al mar',
+      ogDescription:
+        'Casa en primera fila en Playa El Amatal. Hasta 12 personas, 4 habitaciones con A/C, piscina privada. Reserva por WhatsApp.',
       ogAlt: 'Piscina azul frente a la casa de Rancho Varadero, entre palmeras',
     },
     saltar: 'Saltar al contenido',
@@ -241,6 +252,9 @@ export const sitio = {
       title: 'Rancho Varadero · Beachfront house at Playa El Amatal, El Salvador',
       description:
         'Beachfront rental right on the ocean at Playa El Amatal, La Libertad, El Salvador. Sleeps up to 12, 4 bedrooms with air conditioning and a private pool. Get a quote on WhatsApp.',
+      ogTitle: 'Rancho Varadero · Your beachfront house in El Salvador',
+      ogDescription:
+        'Oceanfront at Playa El Amatal. Sleeps 12, 4 A/C bedrooms, private pool. Reserve on WhatsApp.',
       ogAlt: 'Blue pool in front of the Rancho Varadero house, among palm trees',
     },
     saltar: 'Skip to content',
@@ -412,12 +426,20 @@ export type Sitio = (typeof sitio)[Lang];
 // Fotos reales de la propiedad (galería, servicios, JSON-LD). Mismo orden que el paseo.
 // Son los keyframes retocados del recorrido (media/keyframes/07-final, 16:9, 1440×810). El camino a la playa se
 // queda en su foto vertical original: es la pieza alta de la cuadrícula de la galería.
+import piscinaCasa from '../assets/galeria/0-piscina-casa.webp';
+import kioskoHamacas from '../assets/galeria/1-kiosko-hamacas.webp';
+import sala from '../assets/galeria/2-sala.webp';
+import corredor from '../assets/galeria/3-corredor.webp';
+import piscinaMar from '../assets/galeria/4-piscina-mar.webp';
+import caminoPlaya from '../assets/galeria/5-camino-playa.webp';
+import aereo from '../assets/galeria/6-aereo.webp';
+
 export const galeria = [
-  { src: '/galeria/0-piscina-casa.webp', id: 'piscinaCasa', w: 1440, h: 810 },
-  { src: '/galeria/1-kiosko-hamacas.webp', id: 'casa', w: 1440, h: 810 },
-  { src: '/galeria/2-sala.webp', id: 'sala', w: 1440, h: 810 },
-  { src: '/galeria/3-corredor.webp', id: 'corredor', w: 1440, h: 810 },
-  { src: '/galeria/4-piscina-mar.webp', id: 'piscinaMar', w: 1440, h: 810 },
-  { src: '/galeria/5-camino-playa.webp', id: 'caminoPlaya', w: 1200, h: 1600 },
-  { src: '/galeria/6-aereo.webp', id: 'aereo', w: 1440, h: 810 },
+  { src: piscinaCasa, id: 'piscinaCasa', w: 1440, h: 810 },
+  { src: kioskoHamacas, id: 'casa', w: 1440, h: 810 },
+  { src: sala, id: 'sala', w: 1440, h: 810 },
+  { src: corredor, id: 'corredor', w: 1440, h: 810 },
+  { src: piscinaMar, id: 'piscinaMar', w: 1440, h: 810 },
+  { src: caminoPlaya, id: 'caminoPlaya', w: 1200, h: 1600 },
+  { src: aereo, id: 'aereo', w: 1440, h: 810 },
 ] as const;

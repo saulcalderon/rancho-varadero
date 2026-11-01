@@ -28,13 +28,13 @@ const year = new Date().getFullYear();
         <Icon name="mapPin" class="size-4 text-piscina" />
         {t.footer.ubicacion}
       </p>
-      <a href={whatsapp(lang)} target="_blank" rel="noopener" class="link inline-flex w-max items-center gap-2 text-tinta">
+      <a href={whatsapp(lang)} target="_blank" rel="noopener" class="link inline-flex w-max items-center gap-2 text-tinta min-h-11 py-2">
         <Icon name="whatsapp" class="size-4 text-piscina" />
         WhatsApp {telefonos[0].numero}
       </a>
       {
         telefonos.map((tel) => (
-          <a href={tel.href} class="link inline-flex w-max items-center gap-2 text-tinta">
+          <a href={tel.href} class="link inline-flex w-max items-center gap-2 text-tinta min-h-11 py-2">
             <Icon name="phone" class="size-4 text-piscina" />
             {tel.numero}
           </a>

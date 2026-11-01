@@ -2,6 +2,7 @@
 // Paseo por el rancho: 7 tomas estáticas (fotogramas fijos) unidas por 6 tramos de vídeo que avanzan y retroceden con el scroll.
 // El motor (src/scripts/scroll-world.js) adopta este marcado: así el h1, el copy y el primer póster están en el HTML.
 // Tomas estáticas = `sections` SIN clip; tramos = `connectors` (paseo-k va de la toma estática k-1 a la toma estática k).
+import { getImage } from 'astro:assets';
 import Icon from './Icon.astro';
 import { paradas, ritmo, sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
 
@@ -21,6 +22,50 @@ const iconos = ['house', 'palm', 'couch', 'group', 'pool', 'waves', 'calendar'] 
 
 const lugares = [p.hero.lugar, ...p.paradas.map((x) => x.lugar), p.final.lugar];
 
+// Generate optimized video posters in multiple formats and sizes
+// Mobile: 960px wide, Desktop: 1920px wide
+const videoPostersDesktop = await Promise.all(
+  paradas.slice(0, -1).map(async (parada) => {
+    if (!parada.videoPoster) return null;
+    const avif = await getImage({
+      src: parada.videoPoster,
+      width: 1920,
+      height: 1080,
+      format: 'avif',
+      quality: 60,
+    });
+    const webp = await getImage({
+      src: parada.videoPoster,
+      width: 1920,
+      height: 1080,
+      format: 'webp',
+      quality: 75,
+    });
+    return { avif: avif.src, webp: webp.src };
+  })
+);
+
+const videoPostersMobile = await Promise.all(
+  paradas.slice(0, -1).map(async (parada) => {
+    if (!parada.videoPoster) return null;
+    const avif = await getImage({
+      src: parada.videoPoster,
+      width: 960,
+      height: 540,
+      format: 'avif',
+      quality: 55,
+    });
+    const webp = await getImage({
+      src: parada.videoPoster,
+      width: 960,
+      height: 540,
+      format: 'webp',
+      quality: 70,
+    });
+    return { avif: avif.src, webp: webp.src };
+  })
+);
+
 const config = {
   diveScroll: ritmo.parada,
   connScroll: ritmo.tramo,
@@ -36,8 +81,9 @@ const config = {
     scroll: i === 0 ? ritmo.primera : i === total - 1 ? ritmo.ultima : ritmo.parada,
   })),
   connectors: paradas.slice(0, -1).map((parada) => parada.clip),
-  // En teléfonos y tabletas, los mismos clips a 1280 px (la mitad de peso; en vertical solo se ve una franja).
-  connectorsMobile: paradas.slice(0, -1).map((parada) => (parada.clip ?? '').replace('.mp4', '-m.mp4')),
+  connectorsMobile: paradas.slice(0, -1).map((parada) => parada.clipMobile),
+  videoPostersDesktop: videoPostersDesktop,
+  videoPostersMobile: videoPostersMobile,
 };
 
 // Escenas en el mismo orden que la cadena del motor: toma estática 0, tramo 1, toma estática 1, tramo 2 … toma estática 6.
@@ -164,7 +210,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
             <Icon name="whatsapp" class="size-5" />
             {t.reservar}
           </a>
-          <a href={telefonos[0].href} class="btn btn-ghost btn-lg">
+          <a href={telefonos[0].href} class="btn btn-ghost btn-lg min-h-11">
             <Icon name="phone" class="size-5" />
             {t.llamar}
           </a>
@@ -175,7 +221,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
             telefonos.map((tel, k) => (
               <>
                 {k > 0 && <span aria-hidden="true"> · </span>}
-                <a href={tel.href} class="link font-semibold whitespace-nowrap text-tinta">
+                <a href={tel.href} class="link font-semibold whitespace-nowrap text-tinta inline-block min-h-11 py-2">
                   {tel.numero}
                 </a>
               </>
@@ -214,7 +260,7 @@ const texto = 'mt-4 max-w-md text-base text-tinta-suave lg:text-lg';
   </div>
 
   <!-- Distancia de scroll del paseo. Los anclajes (#inicio, #descanso…) los coloca el motor en la mitad de cada toma estática. -->
-  <div class="sw-track">
+  <div class="sw-track" style="height: calc(16.8 * 100svh);">
     {paradas.map((parada) => <span class="sw-anchor" id={parada.id} data-sw-anchor={parada.id} />)}
   </div>
 </section>

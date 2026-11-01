@@ -94,6 +94,7 @@
     line-height: var(--text-base--line-height);
     font-weight: 600;
     white-space: nowrap;
+    touch-action: manipulation;
     transition:
       background-color 700ms var(--ease-fluid),
       color 700ms var(--ease-fluid),
@@ -144,6 +145,7 @@
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
     text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+    touch-action: manipulation;
     transition:
       color 700ms var(--ease-fluid),
       text-decoration-color 700ms var(--ease-fluid);
