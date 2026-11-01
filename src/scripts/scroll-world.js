@@ -153,23 +153,36 @@ export function mountScrollWorld(container, config) {
   // segment scenes
   const preScenes = stage.querySelectorAll('.sw-scene');
   const adoptScenes = preScenes.length === NSEG;
+  const videoPosters = config.videoPosters || [];
   SEGMENTS.forEach((s, i) => {
-    let scene, img;
+    let scene, img, posterImg;
     if (adoptScenes) {
       scene = preScenes[i];
       img = scene.querySelector('.sw-scene__still') || scene.appendChild(el('img', 'sw-scene__still'));
+      posterImg = scene.querySelector('.sw-scene__video-poster');
     } else {
       scene = el('div', 'sw-scene');
       img = el('img', 'sw-scene__still'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy';
       const poster = (isMobile() && s.stillM) ? s.stillM : s.still;
       if (poster) img.src = poster;
-      scene.appendChild(img); stage.appendChild(scene);
+      scene.appendChild(img);
+      // Add video poster for connector segments
+      if (s.kind === 'conn' && videoPosters[s.si]) {
+        posterImg = el('img', 'sw-scene__video-poster');
+        posterImg.src = videoPosters[s.si];
+        posterImg.alt = '';
+        posterImg.decoding = 'async';
+        posterImg.loading = i < 2 ? 'eager' : 'lazy';
+        posterImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--sw-fx,50%) center;z-index:1;pointer-events:none;';
+        scene.appendChild(posterImg);
+      }
+      stage.appendChild(scene);
     }
     scene.style.setProperty('--sw-accent', s.accent || '');
     scene.style.setProperty('--sw-fx', s.fx0 + '%');
     scene.dataset.seg = String(i);
     scene.dataset.kind = s.kind;
-    s.el = scene; s.img = img; s.video = null; s.hasClip = false;
+    s.el = scene; s.img = img; s.posterImg = posterImg; s.video = null; s.hasClip = false;
     s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false; s.fx = s.fx0;
   });
 
@@ -282,17 +295,30 @@ export function mountScrollWorld(container, config) {
         v.setAttribute('aria-hidden', 'true'); v.setAttribute('tabindex', '-1');
         v.disablePictureInPicture = true; v.setAttribute('disableremoteplayback', '');
         v.src = URL.createObjectURL(blob);
+        v.style.opacity = '0';
+        v.style.transition = 'opacity 400ms ease-in';
         v.addEventListener('loadedmetadata', () => { s.ready = true; read(); });
-        // Reveal the video (hide the still poster) only once a real frame has painted —
-        // on iOS a seeked-but-never-played muted video stays blank.
-        v.addEventListener('seeked', () => { s.el.classList.add('has-clip'); }, { once: true });
+        // Reveal the video (fade in over poster) only once a real frame has painted
+        v.addEventListener('seeked', () => { 
+          s.el.classList.add('has-clip');
+          // Fade in video and fade out poster
+          requestAnimationFrame(() => { 
+            v.style.opacity = '1';
+            if (s.posterImg) {
+              s.posterImg.style.transition = 'opacity 400ms ease-out';
+              s.posterImg.style.opacity = '0';
+            }
+          });
+        }, { once: true });
         s.el.appendChild(v); s.video = v; s.hasClip = true;
         loaded++; progress();
-        // Prime right away: on iOS a paused video that never played stays at readyState 1 and its seeks never
-        // resolve. Muted inline play() is allowed without a gesture (Low Power Mode is retried on the next touch).
         primeVideo(v);
       })
-      .catch((e) => { s.loading = false; failed++; progress(); s.el.dataset.error = String(e && e.message || e); })
+      .catch((e) => { 
+        s.loading = false; failed++; progress(); 
+        s.el.dataset.error = String(e && e.message || e);
+        // Keep poster visible if video fails
+      })
       .finally(() => { inFlight--; pump(); });
   }
 

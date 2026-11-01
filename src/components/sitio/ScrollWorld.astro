@@ -2,6 +2,7 @@
 // Paseo por el rancho: 7 tomas estáticas (fotogramas fijos) unidas por 6 tramos de vídeo que avanzan y retroceden con el scroll.
 // El motor (src/scripts/scroll-world.js) adopta este marcado: así el h1, el copy y el primer póster están en el HTML.
 // Tomas estáticas = `sections` SIN clip; tramos = `connectors` (paseo-k va de la toma estática k-1 a la toma estática k).
+import { getImage } from 'astro:assets';
 import Icon from './Icon.astro';
 import { paradas, ritmo, sitio, telefonos, whatsapp, type Lang } from '../../data/sitio';
 
@@ -21,6 +22,21 @@ const iconos = ['house', 'palm', 'couch', 'group', 'pool', 'waves', 'calendar'] 
 
 const lugares = [p.hero.lugar, ...p.paradas.map((x) => x.lugar), p.final.lugar];
 
+// Generate optimized video posters
+const videoPosters = await Promise.all(
+  paradas.slice(0, -1).map(async (parada) => {
+    if (!parada.videoPoster) return null;
+    const img = await getImage({
+      src: parada.videoPoster,
+      width: 2560,
+      height: 1440,
+      format: 'webp',
+      quality: 85,
+    });
+    return img.src;
+  })
+);
+
 const config = {
   diveScroll: ritmo.parada,
   connScroll: ritmo.tramo,
@@ -36,8 +52,8 @@ const config = {
     scroll: i === 0 ? ritmo.primera : i === total - 1 ? ritmo.ultima : ritmo.parada,
   })),
   connectors: paradas.slice(0, -1).map((parada) => parada.clip),
-  // En teléfonos y tabletas, los mismos clips a 1280 px (la mitad de peso; en vertical solo se ve una franja).
-  connectorsMobile: paradas.slice(0, -1).map((parada) => (parada.clip ?? '').replace('.mp4', '-m.mp4')),
+  connectorsMobile: paradas.slice(0, -1).map((parada) => parada.clipMobile),
+  videoPosters: videoPosters,
 };
 
 // Escenas en el mismo orden que la cadena del motor: toma estática 0, tramo 1, toma estática 1, tramo 2 … toma estática 6.

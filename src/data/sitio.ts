@@ -10,6 +10,13 @@ import poster5 from '../assets/paseo/paseo-5.webp';
 import poster6 from '../assets/paseo/paseo-6.webp';
 import poster7 from '../assets/paseo/paseo-7.webp';
 
+import videoPoster1 from '../assets/video-posters/paseo-1-poster.jpg';
+import videoPoster2 from '../assets/video-posters/paseo-2-poster.jpg';
+import videoPoster3 from '../assets/video-posters/paseo-3-poster.jpg';
+import videoPoster4 from '../assets/video-posters/paseo-4-poster.jpg';
+import videoPoster5 from '../assets/video-posters/paseo-5-poster.jpg';
+import videoPoster6 from '../assets/video-posters/paseo-6-poster.jpg';
+
 export type { Lang };
 
 export const rutas = { es: '/', en: '/en/' } as const;
@@ -29,14 +36,15 @@ export const telefonos = contacto.telefonos.map((numero) => ({ numero, href: tel
 // paseo-k.webp = primer fotograma del clip k = toma estática k-1; paseo-7.webp = último fotograma del clip 6 = toma estática 6.
 // `focus` es la posición horizontal (0–100 %) del recorte cuando la pantalla es más estrecha que el 16:9 (móvil),
 // elegida mirando cada fotograma para que el sujeto quede a la vista.
+// `videoPoster` es la imagen de póster para el video (extraída del primer fotograma).
 export const paradas = [
-  { id: 'inicio', poster: poster1, clip: '/video/paseo-1.mp4', focus: 50 }, // piscina frente a la casa
-  { id: 'descanso', poster: poster2, clip: '/video/paseo-2.mp4', focus: 22 }, // kiosko con hamacas (izquierda)
-  { id: 'sala', poster: poster3, clip: '/video/paseo-3.mp4', focus: 36 }, // sofás de mimbre
-  { id: 'eventos', poster: poster4, clip: '/video/paseo-4.mp4', focus: 26 }, // corredor abierto al jardín
-  { id: 'piscina', poster: poster5, clip: '/video/paseo-5.mp4', focus: 50 }, // piscina con el mar al fondo
-  { id: 'playa', poster: poster6, clip: '/video/paseo-6.mp4', focus: 55 }, // camino al kiosko de playa
-  { id: 'reserva', poster: poster7, clip: null, focus: 68 }, // vista aérea: piscina entre palmeras (el kiosko queda bajo el texto en móvil)
+  { id: 'inicio', poster: poster1, videoPoster: videoPoster1, clip: '/video/opt/paseo-1-desktop.mp4', clipMobile: '/video/opt/paseo-1-mobile.mp4', focus: 50 },
+  { id: 'descanso', poster: poster2, videoPoster: videoPoster2, clip: '/video/opt/paseo-2-desktop.mp4', clipMobile: '/video/opt/paseo-2-mobile.mp4', focus: 22 },
+  { id: 'sala', poster: poster3, videoPoster: videoPoster3, clip: '/video/opt/paseo-3-desktop.mp4', clipMobile: '/video/opt/paseo-3-mobile.mp4', focus: 36 },
+  { id: 'eventos', poster: poster4, videoPoster: videoPoster4, clip: '/video/opt/paseo-4-desktop.mp4', clipMobile: '/video/opt/paseo-4-mobile.mp4', focus: 26 },
+  { id: 'piscina', poster: poster5, videoPoster: videoPoster5, clip: '/video/opt/paseo-5-desktop.mp4', clipMobile: '/video/opt/paseo-5-mobile.mp4', focus: 50 },
+  { id: 'playa', poster: poster6, videoPoster: videoPoster6, clip: '/video/opt/paseo-6-desktop.mp4', clipMobile: '/video/opt/paseo-6-mobile.mp4', focus: 55 },
+  { id: 'reserva', poster: poster7, videoPoster: null, clip: null, clipMobile: null, focus: 68 },
 ] as const;
 
 // Cuánta pantalla de scroll ocupa cada toma estática (en alturas de pantalla). Más en la primera y la última.
