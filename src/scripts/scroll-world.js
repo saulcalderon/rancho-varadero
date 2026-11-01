@@ -153,28 +153,65 @@ export function mountScrollWorld(container, config) {
   // segment scenes
   const preScenes = stage.querySelectorAll('.sw-scene');
   const adoptScenes = preScenes.length === NSEG;
-  const videoPosters = config.videoPosters || [];
+  const videoPostersDesktop = config.videoPostersDesktop || [];
+  const videoPostersMobile = config.videoPostersMobile || [];
   SEGMENTS.forEach((s, i) => {
-    let scene, img, posterImg;
+    let scene, img, posterPicture;
     if (adoptScenes) {
       scene = preScenes[i];
       img = scene.querySelector('.sw-scene__still') || scene.appendChild(el('img', 'sw-scene__still'));
-      posterImg = scene.querySelector('.sw-scene__video-poster');
+      posterPicture = scene.querySelector('.sw-scene__video-poster');
     } else {
       scene = el('div', 'sw-scene');
       img = el('img', 'sw-scene__still'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy';
       const poster = (isMobile() && s.stillM) ? s.stillM : s.still;
       if (poster) img.src = poster;
       scene.appendChild(img);
-      // Add video poster for connector segments
-      if (s.kind === 'conn' && videoPosters[s.si]) {
-        posterImg = el('img', 'sw-scene__video-poster');
-        posterImg.src = videoPosters[s.si];
+      // Add video poster for connector segments with responsive AVIF/WebP
+      if (s.kind === 'conn' && videoPostersDesktop[s.si] && videoPostersMobile[s.si]) {
+        const desktop = videoPostersDesktop[s.si];
+        const mobile = videoPostersMobile[s.si];
+        posterPicture = document.createElement('picture');
+        posterPicture.className = 'sw-scene__video-poster';
+        posterPicture.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+        
+        // Mobile AVIF
+        const mobileAvif = document.createElement('source');
+        mobileAvif.srcset = mobile.avif;
+        mobileAvif.type = 'image/avif';
+        mobileAvif.media = '(max-width: 768px)';
+        posterPicture.appendChild(mobileAvif);
+        
+        // Mobile WebP fallback
+        const mobileWebp = document.createElement('source');
+        mobileWebp.srcset = mobile.webp;
+        mobileWebp.type = 'image/webp';
+        mobileWebp.media = '(max-width: 768px)';
+        posterPicture.appendChild(mobileWebp);
+        
+        // Desktop AVIF
+        const desktopAvif = document.createElement('source');
+        desktopAvif.srcset = desktop.avif;
+        desktopAvif.type = 'image/avif';
+        posterPicture.appendChild(desktopAvif);
+        
+        // Desktop WebP fallback
+        const desktopWebp = document.createElement('source');
+        desktopWebp.srcset = desktop.webp;
+        desktopWebp.type = 'image/webp';
+        posterPicture.appendChild(desktopWebp);
+        
+        // Final img fallback
+        const posterImg = document.createElement('img');
+        posterImg.src = desktop.webp;
         posterImg.alt = '';
         posterImg.decoding = 'async';
         posterImg.loading = i < 2 ? 'eager' : 'lazy';
-        posterImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--sw-fx,50%) center;z-index:1;pointer-events:none;';
-        scene.appendChild(posterImg);
+        posterImg.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:var(--sw-fx,50%) center;';
+        posterPicture.appendChild(posterImg);
+        
+        scene.appendChild(posterPicture);
+        s.posterImg = posterImg;
       }
       stage.appendChild(scene);
     }
@@ -182,7 +219,7 @@ export function mountScrollWorld(container, config) {
     scene.style.setProperty('--sw-fx', s.fx0 + '%');
     scene.dataset.seg = String(i);
     scene.dataset.kind = s.kind;
-    s.el = scene; s.img = img; s.posterImg = posterImg; s.video = null; s.hasClip = false;
+    s.el = scene; s.img = img; s.posterPicture = posterPicture; s.video = null; s.hasClip = false;
     s.loading = false; s.ready = false; s.cur = 0; s.target = 0; s.visible = false; s.fx = s.fx0;
   });
 
@@ -304,9 +341,10 @@ export function mountScrollWorld(container, config) {
           // Fade in video and fade out poster
           requestAnimationFrame(() => { 
             v.style.opacity = '1';
-            if (s.posterImg) {
-              s.posterImg.style.transition = 'opacity 400ms ease-out';
-              s.posterImg.style.opacity = '0';
+            const posterElement = s.posterPicture || s.posterImg;
+            if (posterElement) {
+              posterElement.style.transition = 'opacity 400ms ease-out';
+              posterElement.style.opacity = '0';
             }
           });
         }, { once: true });

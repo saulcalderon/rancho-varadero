@@ -10,10 +10,10 @@ const t = sitio[Astro.props.lang].tagline;
 const text = t.lineas.join(' ');
 ---
 
-<section aria-label={t.label} class="px-4 py-24 md:px-12 xl:px-24">
+<section aria-label={t.label} class="px-4 py-24 md:px-12 xl:px-24" style="min-height: calc(70svh + 12rem);">
   <div class="mx-auto flex min-h-[70svh] max-w-[680px] items-center">
     <p class="sr-only">{text}</p>
-    <p data-words aria-hidden="true" class="text-4xl font-semibold tracking-tight text-balance lg:text-5xl" style="min-height: 10em;">
+    <p data-words aria-hidden="true" class="text-4xl font-semibold tracking-tight text-balance lg:text-5xl">
       {
         t.lineas.map((linea) => (
           <span class="block">

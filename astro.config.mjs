@@ -37,6 +37,7 @@ export default defineConfig({
             src: ['./src/assets/fonts/manrope-latin-wght-normal.woff2'],
             weight: '200 800',
             style: 'normal',
+            display: 'optional',
           },
         ],
       },
