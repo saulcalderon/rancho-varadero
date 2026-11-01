@@ -373,6 +373,12 @@ export function mountScrollWorld(container, config) {
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
+      // Aggressively preload next video segment when current is >40% through for instant transitions
+      const currentSeg = SEGMENTS[ci];
+      if (currentSeg && currentSeg.kind === 'conn' && i === ci + 1 && s.kind === 'conn') {
+        const progress = (y - currentSeg.start) / (currentSeg.end - currentSeg.start);
+        if (progress > 0.4) loadClip(s);
+      }
       // Server-rendered posters after the first one arrive as data-src: fetch them when the
       // segment gets close instead of all at once on landing.
       if (s.img.dataset.src && !s.img.getAttribute('src') && y > s.start - 2.4 * vh && y < s.end + 2.4 * vh) {
@@ -390,6 +396,15 @@ export function mountScrollWorld(container, config) {
       const fx = s.fx0 + (s.fx1 - s.fx0) * local;
       if (Math.abs(fx - s.fx) > 0.05) { s.fx = fx; s.el.style.setProperty('--sw-fx', fx.toFixed(2) + '%'); }
       if (s.clip && (!s.hasClip || !s.ready)) s.img.style.transform = 'none';
+      // Pause videos far offscreen to save CPU/battery
+      if (s.video) {
+        const farOffscreen = outside > 3 * vh;
+        if (farOffscreen && !s.video.paused) {
+          s.video.pause();
+        } else if (!farOffscreen && s.video.paused && s.visible) {
+          s.video.play().catch(() => {});
+        }
+      }
     }
 
     let scrim = 0;
