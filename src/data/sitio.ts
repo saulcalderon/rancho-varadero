@@ -69,6 +69,9 @@ export const sitio = {
       title: 'Rancho Varadero · Casa de playa en primera fila en Playa El Amatal',
       description:
         'Rancho de playa en primera fila frente al mar en Playa El Amatal, La Libertad, El Salvador. Hasta 12 personas, 4 habitaciones con aire acondicionado y piscina privada. Cotiza por WhatsApp.',
+      ogTitle: 'Rancho Varadero · Tu casa de playa frente al mar',
+      ogDescription:
+        'Casa en primera fila en Playa El Amatal. Hasta 12 personas, 4 habitaciones con A/C, piscina privada. Reserva por WhatsApp.',
       ogAlt: 'Piscina azul frente a la casa de Rancho Varadero, entre palmeras',
     },
     saltar: 'Saltar al contenido',
@@ -249,6 +252,9 @@ export const sitio = {
       title: 'Rancho Varadero · Beachfront house at Playa El Amatal, El Salvador',
       description:
         'Beachfront rental right on the ocean at Playa El Amatal, La Libertad, El Salvador. Sleeps up to 12, 4 bedrooms with air conditioning and a private pool. Get a quote on WhatsApp.',
+      ogTitle: 'Rancho Varadero · Your beachfront house in El Salvador',
+      ogDescription:
+        'Oceanfront at Playa El Amatal. Sleeps 12, 4 A/C bedrooms, private pool. Reserve on WhatsApp.',
       ogAlt: 'Blue pool in front of the Rancho Varadero house, among palm trees',
     },
     saltar: 'Skip to content',
