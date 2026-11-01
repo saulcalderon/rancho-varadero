@@ -333,19 +333,21 @@ export function mountScrollWorld(container, config) {
         v.disablePictureInPicture = true; v.setAttribute('disableremoteplayback', '');
         v.src = URL.createObjectURL(blob);
         v.style.opacity = '0';
-        v.style.transition = 'opacity 400ms ease-in';
+        v.style.transition = 'opacity 300ms ease-in';
+        v.style.position = 'absolute';
+        v.style.inset = '0';
+        v.style.width = '100%';
+        v.style.height = '100%';
+        v.style.objectFit = 'cover';
+        v.style.objectPosition = 'var(--sw-fx, 50%) center';
+        v.style.zIndex = '2';
         v.addEventListener('loadedmetadata', () => { s.ready = true; read(); });
         // Reveal the video (fade in over poster) only once a real frame has painted
+        // Keep poster visible underneath as permanent fallback
         v.addEventListener('seeked', () => { 
           s.el.classList.add('has-clip');
-          // Fade in video and fade out poster
           requestAnimationFrame(() => { 
             v.style.opacity = '1';
-            const posterElement = s.posterPicture || s.posterImg;
-            if (posterElement) {
-              posterElement.style.transition = 'opacity 400ms ease-out';
-              posterElement.style.opacity = '0';
-            }
           });
         }, { once: true });
         s.el.appendChild(v); s.video = v; s.hasClip = true;
